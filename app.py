@@ -1,5 +1,5 @@
 # ==============================================================================
-# [PART 1 / 4] 기본 설정 · 화이트 테마 CSS · 좌측 메뉴 라우팅 · 역추적 유틸 · 원가/클레임 파서
+# [PART 1 / 4 - 상단 교체본] 엔터프라이즈 SaaS 화이트 UI 설정 & CSS (이모지·빨간버튼 완전 제거)
 # ==============================================================================
 import html
 import json
@@ -26,12 +26,11 @@ KST_TZ = timezone(timedelta(hours=9))
 
 
 def now_kst() -> datetime:
-    """Streamlit Cloud(UTC 서버) 환경에서도 항상 한국 표준시(KST) 반환"""
     return datetime.now(KST_TZ).replace(tzinfo=None)
 
 
 st.set_page_config(
-    page_title="품질안전부문 AX 스마트 관제 플랫폼 | 연세유업",
+    page_title="YONSEI QUALITY ONE | 품질안전 통합 플랫폼",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -47,54 +46,66 @@ def set_view(view_name: str):
 
 
 def jump_to_lot_trace(prod_kw: str = "", exp_str: str = ""):
-    """클레임·부적합 특이사항 목록에서 클릭 시 LOT 역추적 화면으로 검색어와 함께 즉시 이동"""
     st.session_state["lot_sel_prod"] = "전체 (제품 미선택 · 소비기한으로만 검색)"
     st.session_state["lot_in_kw"] = str(prod_kw or "").strip()
     st.session_state["lot_in_exp"] = str(exp_str or "").strip()
     st.session_state.current_view = "lot_trace"
 
 
-# 좌측 사이드바 3단 탭 메뉴 정의 ('부문 원가절감 추세' 제외 반영)
+def on_global_quick_search():
+    q = st.session_state.get("global_top_search", "").strip()
+    if not q:
+        return
+    st.session_state["lot_sel_prod"] = "전체 (제품 미선택 · 소비기한으로만 검색)"
+    if re.search(r"\d{1,4}[\.\-/]\d{1,2}", q):
+        st.session_state["lot_in_exp"] = q
+        st.session_state["lot_in_kw"] = ""
+    else:
+        st.session_state["lot_in_kw"] = q
+        st.session_state["lot_in_exp"] = ""
+    st.session_state["global_top_search"] = ""
+    st.session_state.current_view = "lot_trace"
+
+
+# 좌측 사이드바 메뉴 (만화풍 컬러 이모지 완전 제거 · 엔터프라이즈 텍스트 네비게이션)
 SIDEBAR_MENU_GROUPS = [
     {
-        "group_title": "1. 품질안전부문 (통합)",
+        "group_title": "품질안전부문 (통합)",
         "items": [
-            ("main", "🖥️ 실시간 통합 관제판"),
-            ("dept_kpi8", "📊 2026 부문 8대 KPI")
+            ("main", "통합 대시보드"),
+            ("dept_kpi8", "2026 부문 8대 KPI")
         ]
     },
     {
-        "group_title": "2. 식품안전팀 (Food Safety)",
+        "group_title": "식품안전팀 (QA)",
         "items": [
-            ("label_status", "🏷️ 표시사항 진행 현황"),
-            ("label_issue", "🧬 원자재 표시사항 DB"),
-            ("kpi_5", "🌡️ 심사점수 · 일정 온도계"),
-            ("supplier", "🤝 협력업체 서류심사"),
-            ("fs_haccp_risk", "🛡️ HACCP 강화 · 법적 RISK")
+            ("label_status", "표시사항 진행 현황"),
+            ("label_issue", "원자재 표시사항 DB"),
+            ("kpi_5", "심사점수 · 일정 관리"),
+            ("supplier", "협력업체 서류심사"),
+            ("fs_haccp_risk", "HACCP · 법적 RISK")
         ]
     },
     {
-        "group_title": "3. 품질관리팀 (Quality Control)",
+        "group_title": "품질관리팀 (QC)",
         "items": [
-            ("process", "🏭 공정 현황 (상온·유제품·배양)"),
-            ("lot_trace", "🔍 클레임 로트 역추적"),
-            ("claim", "📉 클레임 발생률 분석"),
-            ("qc_defect_sub", "📦 핵심불량 · 부자재 관리")
+            ("process", "공정 및 배양 실시간 관제"),
+            ("lot_trace", "생산이력 · LOT 역추적"),
+            ("claim", "클레임 발생률 분석"),
+            ("qc_defect_sub", "핵심불량 · 부자재 관리")
         ]
     }
 ]
 
-# 심사 진행현황 온도계 게이지 단계 설정
 AUDIT_STATUS_LIST = ["심사준비중", "심사중", "서류심사중", "현장심사중", "심사종료"]
 AUDIT_STATUS_CONFIG = {
-    "심사준비중": {"pct": 20, "color": "#64748B", "bg": "#F1F5F9", "fg": "#334155", "icon": "📋"},
-    "심사중": {"pct": 50, "color": "#0284C7", "bg": "#E0F2FE", "fg": "#0369A1", "icon": "🔍"},
-    "서류심사중": {"pct": 75, "color": "#2563EB", "bg": "#DBEAFE", "fg": "#1D4ED8", "icon": "📑"},
-    "현장심사중": {"pct": 85, "color": "#D97706", "bg": "#FEF3C7", "fg": "#92400E", "icon": "🏭"},
-    "심사종료": {"pct": 100, "color": "#10B981", "bg": "#DCFCE7", "fg": "#166534", "icon": "✅"}
+    "심사준비중": {"pct": 20, "color": "#64748B", "bg": "#F1F5F9", "fg": "#334155", "icon": ""},
+    "심사중": {"pct": 50, "color": "#0284C7", "bg": "#E0F2FE", "fg": "#0369A1", "icon": ""},
+    "서류심사중": {"pct": 75, "color": "#2563EB", "bg": "#DBEAFE", "fg": "#1D4ED8", "icon": ""},
+    "현장심사중": {"pct": 85, "color": "#D97706", "bg": "#FEF3C7", "fg": "#92400E", "icon": ""},
+    "심사종료": {"pct": 100, "color": "#10B981", "bg": "#DCFCE7", "fg": "#166534", "icon": ""}
 }
 
-# 2026 부문 8대 KPI 중 수동/병행 관리 항목 기본값 (기존 시트 저장 키 호환 유지 + 1~8번 정식 번호 매핑)
 DEFAULT_MANUAL_KPIS = {
     "kpi_8": {
         "no": "3",
@@ -123,7 +134,7 @@ DEFAULT_MANUAL_KPIS = {
         "target_text": "38건 이하",
         "actual_text": "5건",
         "compact_val": "5건",
-        "sub_badge": "목표(38건 이하) 대비 우수 관리",
+        "sub_badge": "목표(38건 이하) 대비 안정 관리",
         "target_num": 38.0,
         "actual_num": 5.0,
         "suffix": "",
@@ -143,7 +154,7 @@ DEFAULT_MANUAL_KPIS = {
         "target_text": "부자재폐기 0건",
         "actual_text": "0건",
         "compact_val": "0건",
-        "sub_badge": "부자재 폐기 0건 무결점 유지",
+        "sub_badge": "부자재 폐기 0건 유지",
         "target_num": 0.0,
         "actual_num": 0.0,
         "suffix": "건",
@@ -219,15 +230,14 @@ DEFAULT_MANUAL_KPIS = {
     }
 }
 
-# 대시보드 특이사항 보드 초기 기본값 (시트 저장 시 시트값으로 자동 대체)
 DEFAULT_LABEL_MEMO = (
-    "• 원재료 변경 품목 전성분 및 알레르기 유발물질 표시 교차 점검 진행\n"
-    "• 표시사항 신규·변경 의뢰 건 부자재 발주 전 최종 확인필 여부 상시 체크"
+    "원재료 변경 품목 전성분 및 알레르기 유발물질 표시 교차 점검 진행\n"
+    "표시사항 신규·변경 의뢰 건 부자재 발주 전 최종 확인필 여부 상시 체크"
 )
 
 DEFAULT_CLAIM_ISSUES = [
-    {"구분": "클레임추적", "특이사항": "주요 클레임 접수 품목 생산·멸균·배양 이력 점검", "상태": "상시점검", "제품키워드": "", "소비기한": ""},
-    {"구분": "공정·부적합", "특이사항": "카톤·멸균팩 상하부 접착 및 표시사항 인쇄 상태 집중 모니터링", "상태": "관리중", "제품키워드": "", "소비기한": ""}
+    {"구분": "클레임추적", "특이사항": "주요 클레임 접수 품목 생산·멸균·배양 이력 점검", "상태": "확인 필요", "제품키워드": "", "소비기한": ""},
+    {"구분": "공정·부적합", "특이사항": "카톤·멸균팩 상하부 접착 및 표시사항 인쇄 상태 집중 모니터링", "상태": "진행 중", "제품키워드": "", "소비기한": ""}
 ]
 
 if "manual_kpis" not in st.session_state:
@@ -262,515 +272,523 @@ HIST_TABS = {
 }
 
 # ==============================================================================
-# 2. 모던 SaaS 화이트 & 연세 블루 테마 CSS (최신 Streamlit DOM 완벽 호환)
+# 2. 엔터프라이즈 B2B SaaS 디자인 시스템 CSS (QUALITY ONE 레퍼런스 정밀 반영)
 # ==============================================================================
 st.markdown("""
 <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
+    :root {
+        --primary-color: #2563EB !important;
+    }
     html, body, [class*="css"] {
-        font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif !important;
+        -webkit-font-smoothing: antialiased;
     }
     .stApp {
-        background-color: #F5F7FB;
-        color: #0F172A;
+        background-color: #F7F8FA !important;
+        color: #111827 !important;
     }
-    header[data-testid="stHeader"],
-    [data-testid="stAppHeader"] {
-        background-color: #F5F7FB !important;
+
+    /* Streamlit 기본 상단 우측 메뉴/장식 숨김 -> 순수 업무용 웹솔루션 외형 */
+    #MainMenu, footer { visibility: hidden; }
+    header[data-testid="stHeader"] {
+        background-color: transparent !important;
+        height: 1.8rem !important;
     }
     div[data-testid="stMainBlockContainer"],
     div[data-testid="stAppViewBlockContainer"],
     .block-container {
-        padding-top: 2.2rem !important;
-        padding-bottom: 2.2rem !important;
-        max-width: 98% !important;
+        padding-top: 1.2rem !important;
+        padding-bottom: 2.0rem !important;
+        padding-left: 2.0rem !important;
+        padding-right: 2.0rem !important;
+        max-width: 100% !important;
     }
 
     /* ------------------------------------------------------------------ */
-    /* 좌측 사이드바 : 테두리 없는 깔끔한 모던 SaaS 탭 스타일                */
+    /* 좌측 사이드바 : QUALITY ONE 스타일 (화이트 배경 + 소프트 블루 활성탭) */
     /* ------------------------------------------------------------------ */
     section[data-testid="stSidebar"] {
         background-color: #FFFFFF !important;
-        border-right: 1px solid #E5EAF2 !important;
-        min-width: 246px !important;
-        max-width: 264px !important;
+        border-right: 1px solid #EAECF0 !important;
+        min-width: 236px !important;
+        max-width: 248px !important;
     }
     section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] {
-        padding-top: 1.1rem !important;
+        padding: 1.1rem 0.9rem !important;
     }
-    .sb-brand-box {
-        background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-left: 4px solid #00205B;
-        padding: 12px 14px;
-        border-radius: 10px;
-        margin-bottom: 14px;
+    .qo-brand-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 6px 16px 6px;
+        border-bottom: 1px solid #F2F4F7;
+        margin-bottom: 12px;
     }
-    .sb-brand-title {
+    .qo-logo-mark {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
+        color: #FFFFFF;
+        font-weight: 900;
         font-size: 16px;
-        font-weight: 800;
-        color: #00205B;
-        letter-spacing: -0.3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: -0.5px;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+        flex-shrink: 0;
     }
-    .sb-brand-sub {
-        font-size: 11.5px;
-        color: #64748B;
+    .qo-brand-name {
+        font-size: 14.5px;
+        font-weight: 800;
+        color: #111827;
+        letter-spacing: -0.3px;
+        line-height: 1.2;
+    }
+    .qo-brand-sub {
+        font-size: 10.8px;
+        font-weight: 500;
+        color: #6B7280;
         margin-top: 2px;
-        font-weight: 600;
     }
     .sb-group-hdr {
-        font-size: 11.3px;
-        font-weight: 800;
-        color: #64748B;
-        padding: 10px 8px 3px 8px;
-        margin: 6px 0 2px 0;
+        font-size: 11px;
+        font-weight: 700;
+        color: #9CA3AF;
+        padding: 12px 10px 4px 10px;
         letter-spacing: -0.1px;
     }
 
-    /* 사이드바 선택된 탭 (연한 스카이블루 하이라이트) */
-    section[data-testid="stSidebar"] .stButton > button[kind="primary"],
-    section[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-primary"],
-    section[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"] {
+    /* 사이드바 모든 버튼 공통 초기화 후 활성/비활성 분리 */
+    section[data-testid="stSidebar"] button {
+        width: 100% !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        border-radius: 8px !important;
+        padding: 7px 12px !important;
+        min-height: 36px !important;
+        margin-bottom: 1px !important;
+        box-shadow: none !important;
+        transition: background-color 0.14s ease, color 0.14s ease !important;
+    }
+    section[data-testid="stSidebar"] button div[data-testid="stMarkdownContainer"] p {
+        font-size: 13.2px !important;
+        margin: 0 !important;
+    }
+    /* 사이드바 활성 메뉴 (연한 파스텔 블루 박스 + 블루 텍스트, 빨간색 완전 차단) */
+    section[data-testid="stSidebar"] button[kind="primary"],
+    section[data-testid="stSidebar"] button[data-testid="stBaseButton-primary"],
+    section[data-testid="stSidebar"] button[data-testid="baseButton-primary"] {
         background-color: #EFF6FF !important;
         color: #1D4ED8 !important;
-        font-size: 13.4px !important;
-        font-weight: 800 !important;
-        text-align: left !important;
-        justify-content: flex-start !important;
-        padding: 8px 12px !important;
-        border: none !important;
-        border-left: 3.5px solid #1D4ED8 !important;
-        border-radius: 0 8px 8px 0 !important;
-        box-shadow: none !important;
-        margin-bottom: 1px !important;
+        border: 1px solid #DBEAFE !important;
+        font-weight: 700 !important;
     }
-    /* 사이드바 일반 탭 (네모 박스 테두리 제거) */
-    section[data-testid="stSidebar"] .stButton > button[kind="secondary"],
-    section[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-secondary"],
-    section[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-secondary"] {
+    section[data-testid="stSidebar"] button[kind="primary"] div[data-testid="stMarkdownContainer"] p {
+        color: #1D4ED8 !important;
+        font-weight: 700 !important;
+    }
+    /* 사이드바 비활성 메뉴 (테두리 없음) */
+    section[data-testid="stSidebar"] button[kind="secondary"],
+    section[data-testid="stSidebar"] button[data-testid="stBaseButton-secondary"],
+    section[data-testid="stSidebar"] button[data-testid="baseButton-secondary"] {
         background-color: transparent !important;
-        color: #475569 !important;
-        font-size: 13.3px !important;
-        font-weight: 600 !important;
-        text-align: left !important;
-        justify-content: flex-start !important;
-        padding: 8px 12px !important;
-        border: none !important;
-        border-radius: 8px !important;
-        box-shadow: none !important;
-        margin-bottom: 1px !important;
+        color: #4B5563 !important;
+        border: 1px solid transparent !important;
+        font-weight: 500 !important;
     }
-    section[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover,
-    section[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-secondary"]:hover,
-    section[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-secondary"]:hover {
-        background-color: #F1F5F9 !important;
-        color: #0F172A !important;
+    section[data-testid="stSidebar"] button[kind="secondary"]:hover,
+    section[data-testid="stSidebar"] button[data-testid="stBaseButton-secondary"]:hover {
+        background-color: #F3F4F6 !important;
+        color: #111827 !important;
     }
 
     /* ------------------------------------------------------------------ */
-    /* 메인 본문 버튼 : 기본 빨간색 완전 차단 & 세련된 좌측정렬 소프트 헤더   */
+    /* 메인 영역 모든 버튼 : 빨간색 원천 봉쇄 & 슬림 엔터프라이즈 텍스트 버튼 */
     /* ------------------------------------------------------------------ */
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[kind="primary"],
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="baseButton-primary"],
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="stBaseButton-primary"] {
-        width: 100% !important;
-        background: linear-gradient(90deg, #F8FAFC 0%, #F1F5F9 100%) !important;
-        color: #0F172A !important;
-        font-size: 14.6px !important;
-        font-weight: 800 !important;
-        border: 1px solid #E2E8F0 !important;
-        border-left: 4px solid #003876 !important;
-        border-radius: 8px !important;
-        padding: 8px 13px !important;
-        margin-bottom: 6px !important;
-        justify-content: flex-start !important;
-        text-align: left !important;
+    div[data-testid="stMain"] button[kind="primary"],
+    div[data-testid="stMain"] button[data-testid="stBaseButton-primary"],
+    div[data-testid="stMain"] button[data-testid="baseButton-primary"],
+    .main button[kind="primary"] {
+        background-color: #1D4ED8 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #1D4ED8 !important;
+        border-radius: 7px !important;
+        font-size: 12.8px !important;
+        font-weight: 600 !important;
+        padding: 5px 12px !important;
+        min-height: 32px !important;
         box-shadow: none !important;
-        transition: all 0.16s ease !important;
     }
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[kind="primary"] div[data-testid="stMarkdownContainer"] {
-        width: 100% !important;
-        text-align: left !important;
+    div[data-testid="stMain"] button[kind="secondary"],
+    div[data-testid="stMain"] button[data-testid="stBaseButton-secondary"],
+    div[data-testid="stMain"] button[data-testid="baseButton-secondary"],
+    .main button[kind="secondary"] {
+        background-color: #F9FAFB !important;
+        color: #4B5563 !important;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 6px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        padding: 3px 10px !important;
+        min-height: 28px !important;
+        box-shadow: none !important;
+        transition: all 0.14s ease !important;
     }
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[kind="primary"]:hover,
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="baseButton-primary"]:hover,
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="stBaseButton-primary"]:hover {
-        background: #EFF6FF !important;
+    div[data-testid="stMain"] button[kind="secondary"]:hover,
+    div[data-testid="stMain"] button[data-testid="stBaseButton-secondary"]:hover {
+        background-color: #EFF6FF !important;
         color: #1D4ED8 !important;
         border-color: #BFDBFE !important;
-        border-left-color: #1D4ED8 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 3px 10px rgba(29, 78, 216, 0.08) !important;
     }
 
-    /* 메인 본문 보조 버튼 (상단 네비게이션 및 소형 KPI 버튼) */
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[kind="secondary"],
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="baseButton-secondary"],
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="stBaseButton-secondary"] {
+    /* 상단 검색창 (QUALITY ONE 상단 검색바 스타일) */
+    div[data-testid="stTextInput"] div[data-baseweb="input"] {
         background-color: #FFFFFF !important;
-        color: #1E293B !important;
-        font-size: 13.2px !important;
-        font-weight: 700 !important;
-        border: 1px solid #E2E8F0 !important;
+        border: 1px solid #E5E7EB !important;
         border-radius: 8px !important;
-        padding: 6px 11px !important;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
-        transition: all 0.15s ease !important;
+        min-height: 36px !important;
+        font-size: 13px !important;
     }
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[kind="secondary"]:hover,
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="baseButton-secondary"]:hover,
-    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="stBaseButton-secondary"]:hover {
-        background-color: #EFF6FF !important;
-        color: #1D4ED8 !important;
-        border-color: #93C5FD !important;
+    div[data-testid="stPopover"] > div > button {
+        background-color: #F9FAFB !important;
+        color: #374151 !important;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 7px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        min-height: 30px !important;
+        padding: 3px 10px !important;
     }
 
     /* ------------------------------------------------------------------ */
-    /* 헤더 · 카드 컨테이너 · 신호등 · 내부 위젯 스타일                      */
+    /* 상단 글로벌 바 & 히어로 헤더 (QUALITY ONE 스타일)                    */
     /* ------------------------------------------------------------------ */
-    .yonsei-header-bar {
+    .qo-hero-wrap {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        border-bottom: 2px solid #E2E8F0;
-        padding: 4px 0 10px 0;
-        margin-bottom: 14px;
+        align-items: flex-end;
+        padding: 6px 2px 14px 2px;
+        margin-bottom: 6px;
     }
-    .yonsei-title {
-        font-size: 22px;
+    .qo-hero-title {
+        font-size: 20px;
         font-weight: 800;
-        color: #0F172A;
-        letter-spacing: -0.5px;
+        color: #111827;
+        letter-spacing: -0.4px;
+        border-left: 3.5px solid #2563EB;
+        padding-left: 10px;
+        line-height: 1.25;
+    }
+    .qo-hero-sub {
+        font-size: 12.3px;
+        color: #6B7280;
+        margin-top: 4px;
+        padding-left: 13px;
+        font-weight: 500;
     }
     .live-status-pill {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         background-color: #ECFDF5;
-        color: #047857;
+        color: #059669;
         border: 1px solid #A7F3D0;
-        padding: 4px 12px;
+        padding: 4px 11px;
         border-radius: 999px;
-        font-size: 12.2px;
-        font-weight: 700;
+        font-size: 11.8px;
+        font-weight: 600;
     }
-    .section-tag-title {
-        font-size: 14px;
-        font-weight: 800;
-        color: #334155;
-        margin: 2px 0 8px 2px;
+    .live-dot-green {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #10B981;
+        display: inline-block;
     }
 
+    .yonsei-header-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #E5E7EB;
+        padding: 4px 0 12px 0;
+        margin-bottom: 16px;
+    }
+    .yonsei-title {
+        font-size: 19.5px;
+        font-weight: 800;
+        color: #111827;
+        letter-spacing: -0.4px;
+        border-left: 3.5px solid #2563EB;
+        padding-left: 10px;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* 화이트 카드 컨테이너 & 카드 내부 헤더                                */
+    /* ------------------------------------------------------------------ */
     div[data-testid="stVerticalBlockBorderWrapper"] {
         background-color: #FFFFFF !important;
-        border: 1px solid #E5EAF2 !important;
-        border-radius: 14px !important;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.035) !important;
-        padding: 13px 15px !important;
-        margin-bottom: 8px;
+        border: 1px solid #EAECF0 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04) !important;
+        padding: 14px 16px !important;
+        margin-bottom: 10px;
+    }
+    .qo-card-title {
+        font-size: 14.5px;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: -0.2px;
+        padding-top: 3px;
+    }
+    .qo-card-caption {
+        font-size: 11.8px;
+        color: #6B7280;
+        font-weight: 500;
+    }
+    .qo-divider {
+        height: 1px;
+        background-color: #F2F4F7;
+        margin: 8px 0 10px 0;
     }
 
-    .proc-check-row {
+    /* 리스트 행 & 상태 배지 (채도 낮춘 엔터프라이즈 파스텔 배지) */
+    .qo-list-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background-color: #F8FAFC;
-        border: 1px solid #EDF2F7;
-        border-radius: 8px;
-        padding: 7px 11px;
-        margin-bottom: 5px;
+        padding: 8px 4px;
+        border-bottom: 1px solid #F2F4F7;
         font-size: 13px;
     }
-    .proc-check-label { font-weight: 700; color: #1E293B; }
-    .proc-check-meta { font-size: 11.8px; color: #64748B; margin-left: 5px; }
+    .qo-list-row:last-child { border-bottom: none; }
+    .qo-row-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        flex-shrink: 0;
+    }
+    .dot-green { background-color: #10B981; }
+    .dot-amber { background-color: #F59E0B; }
+    .dot-red { background-color: #EF4444; }
+    .dot-blue { background-color: #2563EB; }
 
     .badge-pill {
-        padding: 2.5px 9px;
-        border-radius: 999px;
-        font-size: 11.5px;
-        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 11.3px;
+        font-weight: 600;
         white-space: nowrap;
     }
-    .badge-ok { background-color: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
-    .badge-warn { background-color: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
-    .badge-err { background-color: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
-    .badge-info { background-color: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+    .badge-ok { background-color: #ECFDF5; color: #047857; }
+    .badge-warn { background-color: #FFFBEB; color: #B45309; }
+    .badge-err { background-color: #FEF2F2; color: #DC2626; }
+    .badge-info { background-color: #EFF6FF; color: #1D4ED8; }
+    .badge-neutral { background-color: #F3F4F6; color: #4B5563; }
 
-    .tall-scroll-box {
-        background-color: #F8FAFC;
-        border: 1px solid #EDF2F7;
-        border-radius: 9px;
-        padding: 8px 11px;
-        height: 156px;
+    .qo-scroll-area {
+        max-height: 148px;
+        min-height: 148px;
         overflow-y: auto;
-        font-size: 12.6px;
-        line-height: 1.55;
-        color: #1E293B;
+        padding-right: 4px;
     }
-    .review-list-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-        padding: 5px 4px;
-        border-bottom: 1px dashed #E2E8F0;
-        font-size: 12.5px;
-    }
-    .review-list-row:last-child { border-bottom: none; }
-
-    .memo-board-view {
-        background-color: #FFFBEB;
-        border: 1px solid #FDE68A;
-        border-left: 4px solid #F59E0B;
+    .qo-sub-box {
+        background-color: #F9FAFB;
+        border: 1px solid #EAECF0;
         border-radius: 8px;
-        padding: 8px 11px;
-        min-height: 82px;
+        padding: 9px 12px;
+        min-height: 86px;
         max-height: 98px;
         overflow-y: auto;
-        font-size: 12.5px;
+        font-size: 12.4px;
         line-height: 1.55;
-        color: #78350F;
+        color: #374151;
         margin-top: 6px;
     }
 
-    .audit-banner-today {
-        background-color: #FEF2F2;
-        border: 1px solid #FECACA;
-        border-left: 4px solid #EF4444;
+    /* 슬림 진행률 게이지 바 (온도계 이모지 제거 -> 모던 프로그레스 바) */
+    .qo-prog-banner {
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
         border-radius: 8px;
-        padding: 6px 10px;
-        font-size: 12.8px;
-        font-weight: 800;
-        color: #991B1B;
-    }
-    .audit-banner-up {
-        background-color: #EFF6FF;
-        border: 1px solid #BFDBFE;
-        border-left: 4px solid #2563EB;
-        border-radius: 8px;
-        padding: 6px 10px;
-        font-size: 12.8px;
-        font-weight: 700;
-        color: #1E3A8A;
-    }
-    .thermo-row {
+        padding: 8px 11px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #1E293B;
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 8px;
-        margin: 8px 0 4px 0;
     }
-    .thermo-bulb {
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
-        color: #FFFFFF;
-        font-weight: 800;
-        flex-shrink: 0;
-    }
-    .thermo-track {
-        flex-grow: 1;
-        height: 13px;
-        background-color: #E2E8F0;
+    .qo-prog-track {
+        width: 100%;
+        height: 8px;
+        background-color: #EAECF0;
         border-radius: 999px;
         overflow: hidden;
+        margin: 8px 0 5px 0;
     }
-    .thermo-fill {
+    .qo-prog-fill {
         height: 100%;
         border-radius: 999px;
-        transition: width 0.35s ease;
+        transition: width 0.3s ease;
     }
-    .thermo-stage-labels {
+    .qo-prog-steps {
         display: flex;
         justify-content: space-between;
-        font-size: 11px;
-        color: #64748B;
-        font-weight: 600;
+        font-size: 10.8px;
+        color: #9CA3AF;
+        font-weight: 500;
         margin-bottom: 8px;
-        padding: 0 2px;
     }
-    .audit-sched-scroll {
-        background-color: #F8FAFC;
-        border: 1px solid #EDF2F7;
-        border-radius: 9px;
-        padding: 7px 10px;
-        height: 162px;
-        overflow-y: auto;
-    }
-    .audit-sched-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 5px 2px;
-        border-bottom: 1px dashed #E2E8F0;
-        font-size: 12.5px;
-    }
-    .audit-sched-item:last-child { border-bottom: none; }
 
-    /* 컴팩트 KPI 박스 & 모던 광채 신호등 (투박한 검은 테두리 제거) */
-    .compact-kpi-box {
-        position: relative;
-        padding: 4px 4px 2px 4px;
-        min-height: 70px;
-    }
-    .compact-kpi-val {
-        font-size: 20px;
+    /* 우측 하단 8대 KPI 스코어카드 (QUALITY ONE 상단 숫자 카드 스타일) */
+    .qo-kpi-num {
+        font-size: 22px;
         font-weight: 800;
-        color: #0F172A;
-        line-height: 1.25;
-        margin-top: 3px;
+        color: #111827;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+        margin: 2px 0 4px 0;
     }
-    .compact-kpi-sub {
-        font-size: 11.4px;
-        color: #64748B;
-        font-weight: 600;
-        margin-top: 3px;
-        line-height: 1.35;
-    }
-    .signal-dot {
-        height: 12px;
-        width: 12px;
-        border-radius: 50%;
-        position: absolute;
-        top: 6px;
-        right: 6px;
-    }
-    .signal-green {
-        background-color: #10B981;
-        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.16);
-    }
-    .signal-yellow {
-        background-color: #F59E0B;
-        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
-    }
-    .signal-red {
-        background-color: #EF4444;
-        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16);
-    }
-    .signal-gray {
-        background-color: #94A3B8;
-        box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.16);
+    .qo-kpi-target {
+        font-size: 11.5px;
+        color: #6B7280;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
     }
 
+    .signal-dot {
+        height: 9px;
+        width: 9px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .signal-green { background-color: #10B981; }
+    .signal-yellow { background-color: #F59E0B; }
+    .signal-red { background-color: #EF4444; }
+    .signal-gray { background-color: #9CA3AF; }
+
+    /* 세부 페이지 공통 요소 */
     .kpi-meta-wrap {
         position: relative;
-        min-height: 86px;
-        padding: 6px 6px 4px 6px;
-        font-size: 13.5px;
-        color: #334155;
-        line-height: 1.68;
+        min-height: 80px;
+        padding: 4px 2px;
+        font-size: 13.2px;
+        color: #374151;
+        line-height: 1.65;
     }
-    .kpi-dot-bullet { color: #2563EB; font-weight: 800; margin-right: 6px; }
+    .kpi-dot-bullet { color: #2563EB; font-weight: 700; margin-right: 5px; }
     .kpi-sub-pill {
         display: inline-block;
-        margin-top: 5px;
-        padding: 2.5px 10px;
-        font-size: 11.6px;
-        font-weight: 700;
+        margin-top: 4px;
+        padding: 2px 8px;
+        font-size: 11.3px;
+        font-weight: 600;
         color: #1D4ED8;
         background-color: #EFF6FF;
-        border: 1px solid #DBEAFE;
-        border-radius: 999px;
+        border-radius: 6px;
     }
     .card-scroll-box {
-        background-color: #F8FAFC;
-        border: 1px solid #EDF2F7;
-        border-radius: 9px;
+        background-color: #F9FAFB;
+        border: 1px solid #EAECF0;
+        border-radius: 8px;
         padding: 9px 11px;
-        height: 148px;
+        height: 146px;
         overflow-y: auto;
         margin-top: 4px;
-        font-size: 12.5px;
+        font-size: 12.4px;
         line-height: 1.55;
     }
-
     .forecast-box {
         background-color: #FFFFFF;
-        border: 1px solid #E5EAF2;
-        border-left: 4px solid #1D4ED8;
-        padding: 13px 17px;
-        border-radius: 10px;
+        border: 1px solid #EAECF0;
+        border-left: 3.5px solid #2563EB;
+        padding: 13px 16px;
+        border-radius: 8px;
         margin-bottom: 14px;
-        font-size: 13.6px;
-        line-height: 1.65;
-        color: #1E293B;
+        font-size: 13.4px;
+        line-height: 1.62;
+        color: #1F2937;
     }
     .trace-hero-box {
-        background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
-        border: 1px solid #DBEAFE;
-        border-left: 5px solid #1D4ED8;
-        padding: 15px 19px;
-        border-radius: 10px;
-        margin-bottom: 15px;
-        color: #1E293B;
-        font-size: 13.8px;
-        line-height: 1.62;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-left: 4px solid #2563EB;
+        padding: 14px 18px;
+        border-radius: 8px;
+        margin-bottom: 14px;
+        color: #1F2937;
+        font-size: 13.4px;
+        line-height: 1.6;
     }
     .issue-card-ok {
-        background-color: #F0FDF4;
-        border: 1px solid #BBF7D0;
-        border-left: 4px solid #10B981;
-        border-radius: 9px;
-        padding: 11px 14px;
+        background-color: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-left: 3.5px solid #10B981;
+        border-radius: 8px;
+        padding: 10px 14px;
         margin-bottom: 12px;
-        font-size: 13.3px;
-        line-height: 1.58;
-        color: #14532D;
+        font-size: 13px;
+        color: #065F46;
     }
     .issue-card-warn {
         background-color: #FFFBEB;
         border: 1px solid #FDE68A;
-        border-left: 4px solid #F59E0B;
-        border-radius: 9px;
-        padding: 11px 14px;
+        border-left: 3.5px solid #F59E0B;
+        border-radius: 8px;
+        padding: 10px 14px;
         margin-bottom: 12px;
-        font-size: 13.3px;
-        line-height: 1.58;
-        color: #78350F;
+        font-size: 13px;
+        color: #92400E;
     }
+
+    /* 관제 테이블 (차분한 엔터프라이즈 그리드 헤더) */
     .mon-table {
         width: 100%;
         border-collapse: collapse;
         table-layout: fixed;
-        font-size: 12.8px;
+        font-size: 12.6px;
         margin-bottom: 14px;
         background-color: #FFFFFF;
-        border-radius: 10px;
+        border-radius: 8px;
         overflow: hidden;
-        border: 1px solid #E5EAF2;
+        border: 1px solid #EAECF0;
     }
     .mon-table th {
-        background-color: #F1F5F9;
-        color: #0F172A;
-        font-weight: 800;
-        padding: 9px 7px;
-        border-bottom: 1.5px solid #CBD5E1;
+        background-color: #F9FAFB;
+        color: #374151;
+        font-weight: 700;
+        padding: 9px 8px;
+        border-bottom: 1px solid #EAECF0;
         text-align: center;
         word-break: keep-all;
     }
     .mon-table td {
-        padding: 8px 7px;
-        border-bottom: 1px solid #F1F5F9;
+        padding: 8px 8px;
+        border-bottom: 1px solid #F2F4F7;
         vertical-align: middle;
         word-break: keep-all;
         overflow-wrap: break-word;
         line-height: 1.45;
-        color: #1E293B;
+        color: #1F2937;
     }
-    .mon-table tr:hover td { background-color: #F8FAFC; }
+    .mon-table tr:hover td { background-color: #F9FAFB; }
     .td-center { text-align: center; }
     .td-left { text-align: left; }
-    .cell-green { background-color: #ECFDF5 !important; color: #047857 !important; font-weight: 700; }
-    .cell-yellow { background-color: #FFFBEB !important; color: #B45309 !important; font-weight: 700; }
-    .cell-red { background-color: #FEF2F2 !important; color: #B91C1C !important; font-weight: 700; }
-    .cell-gray { background-color: #F8FAFC !important; color: #94A3B8 !important; }
+    .cell-green { background-color: #ECFDF5 !important; color: #047857 !important; font-weight: 600; }
+    .cell-yellow { background-color: #FFFBEB !important; color: #B45309 !important; font-weight: 600; }
+    .cell-red { background-color: #FEF2F2 !important; color: #DC2626 !important; font-weight: 600; }
+    .cell-gray { background-color: #F9FAFB !important; color: #9CA3AF !important; }
 </style>
 """, unsafe_allow_html=True)
-
 
 # ==============================================================================
 # 3. Google 인증 · 429 재시도 · 로트 역추적 정규화 · HTML 테이블 유틸리티
@@ -2807,8 +2825,18 @@ raw_master_cnt = bundle["raw_master_cnt"]
 all_load_errors = bundle["errors"]
 # ============================ [PART 2 / 4 끝] ============================
 # ==============================================================================
-# [PART 3 / 4] 차트/이력/역추적 렌더러 · 좌측 3단 탭 사이드바 · 메인 실시간 통합 관제판
+# [PART 3 / 4 - 교체본] QUALITY ONE 스타일 카드 헤더 · 사이드바 · 실시간 통합 대시보드
 # ==============================================================================
+
+def render_card_header(title_txt: str, target_view: str, btn_key: str, link_label: str = "상세보기 ›"):
+    """빨간 버튼 박스 대신 좌측 타이포그래피 제목 + 우측 슬림 이동 링크 배치"""
+    hc1, hc2 = st.columns([3.4, 1.1])
+    with hc1:
+        st.markdown(f"<div class='qo-card-title'>{html.escape(title_txt)}</div>", unsafe_allow_html=True)
+    with hc2:
+        st.button(link_label, key=btn_key, type="secondary", use_container_width=True, on_click=set_view, args=(target_view,))
+    st.markdown("<div class='qo-divider'></div>", unsafe_allow_html=True)
+
 
 def draw_mini_bar(target_val: float, actual_val: float, suffix: str = "", bar_labels=("목표", "실적")):
     def fmt_num(v: float) -> str:
@@ -2818,35 +2846,34 @@ def draw_mini_bar(target_val: float, actual_val: float, suffix: str = "", bar_la
     fig.add_trace(go.Bar(
         x=[bar_labels[0]], y=[target_val], text=[fmt_num(target_val)],
         textposition="outside", cliponaxis=False,
-        marker_color="#CBD5E1", width=0.34,
-        textfont=dict(color="#475569", size=12, family="Pretendard, Malgun Gothic")
+        marker_color="#E5E7EB", width=0.32,
+        textfont=dict(color="#6B7280", size=11.5, family="Pretendard, Malgun Gothic")
     ))
     fig.add_trace(go.Bar(
         x=[bar_labels[1]], y=[actual_val], text=[fmt_num(actual_val)],
         textposition="outside", cliponaxis=False,
-        marker_color="#2563EB", width=0.34,
-        textfont=dict(color="#1D4ED8", size=12.5, family="Pretendard, Malgun Gothic")
+        marker_color="#2563EB", width=0.32,
+        textfont=dict(color="#1D4ED8", size=12, family="Pretendard, Malgun Gothic")
     ))
     try:
-        fig.update_traces(marker_cornerradius=6)
+        fig.update_traces(marker_cornerradius=5)
     except Exception:
         pass
 
-    max_y = max(target_val, actual_val) * 1.35 if max(target_val, actual_val) > 0 else 10
+    max_y = max(target_val, actual_val) * 1.36 if max(target_val, actual_val) > 0 else 10
     fig.update_layout(
-        height=152,
-        margin=dict(l=8, r=8, t=22, b=18),
+        height=148,
+        margin=dict(l=8, r=8, t=22, b=16),
         paper_bgcolor="#FFFFFF",
         plot_bgcolor="#FFFFFF",
         showlegend=False,
-        xaxis=dict(showgrid=False, zeroline=False, tickfont=dict(size=12, color="#475569")),
-        yaxis=dict(showgrid=False, zeroline=True, zerolinecolor="#E2E8F0", showticklabels=False, range=[0, max_y])
+        xaxis=dict(showgrid=False, zeroline=False, tickfont=dict(size=11.5, color="#4B5563")),
+        yaxis=dict(showgrid=False, zeroline=True, zerolinecolor="#F2F4F7", showticklabels=False, range=[0, max_y])
     )
     return fig
 
 
 def draw_compact_ppm_chart(df_trend: pd.DataFrame, act_line: list, fc_line: list, last_i: int):
-    """메인 관제판 좌측 하단용 컴팩트 클레임 PPM 추이 그래프"""
     fig = go.Figure()
     if not df_trend.empty:
         rec_flags = df_trend["_기록여부"].tolist() if "_기록여부" in df_trend.columns else [True] * len(df_trend)
@@ -2854,39 +2881,36 @@ def draw_compact_ppm_chart(df_trend: pd.DataFrame, act_line: list, fc_line: list
 
         fig.add_trace(go.Scatter(
             x=df_trend["월"], y=y_vals,
-            name="26년 PPM", mode="lines+markers+text",
+            name="실적 PPM", mode="lines+markers+text",
             text=[f"{v:.2f}" if (v is not None and idx == last_i) else "" for idx, v in enumerate(y_vals)],
             textposition="top center",
-            line=dict(color="#003876", width=2.8),
-            marker=dict(size=6, color="#003876"),
-            fill="tozeroy", fillcolor="rgba(0, 56, 118, 0.08)"
+            line=dict(color="#2563EB", width=2.4),
+            marker=dict(size=5.5, color="#2563EB"),
+            fill="tozeroy", fillcolor="rgba(37, 99, 235, 0.06)"
         ))
         fig.add_trace(go.Scatter(
             x=df_trend["월"], y=df_trend["목표_PPM"],
-            name="목표 1.12", mode="lines",
-            line=dict(color="#DC2626", width=1.8, dash="dash")
+            name="목표(1.12)", mode="lines",
+            line=dict(color="#EF4444", width=1.5, dash="dash")
         ))
         if 0 <= last_i < 11:
             fig.add_trace(go.Scatter(
                 x=df_trend["월"], y=fc_line,
-                name="예상추세", mode="lines+markers",
-                line=dict(color="#0284C7", width=2.0, dash="dot"),
-                marker=dict(symbol="diamond", size=5, color="#0284C7")
+                name="예상 추세", mode="lines+markers",
+                line=dict(color="#93C5FD", width=1.8, dash="dot"),
+                marker=dict(size=4.5, color="#60A5FA")
             ))
 
-    max_ppm = max(
-        float(df_trend["2026년_PPM"].max()) if not df_trend.empty else 1.5,
-        1.4
-    ) * 1.22
+    max_ppm = max(float(df_trend["2026년_PPM"].max()) if not df_trend.empty else 1.5, 1.4) * 1.22
     fig.update_layout(
-        height=162,
-        margin=dict(l=28, r=10, t=8, b=24),
+        height=158,
+        margin=dict(l=26, r=10, t=6, b=22),
         paper_bgcolor="#FFFFFF",
         plot_bgcolor="#FFFFFF",
         showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=0.98, xanchor="right", x=1, font=dict(size=10.5)),
-        xaxis=dict(showgrid=False, tickfont=dict(size=10.5, color="#475569")),
-        yaxis=dict(showgrid=True, gridcolor="#F1F5F9", range=[0, max_ppm], tickfont=dict(size=10.5, color="#475569"))
+        legend=dict(orientation="h", yanchor="bottom", y=0.98, xanchor="right", x=1, font=dict(size=10.5, color="#6B7280")),
+        xaxis=dict(showgrid=False, tickfont=dict(size=10.5, color="#6B7280")),
+        yaxis=dict(showgrid=True, gridcolor="#F3F4F6", range=[0, max_ppm], tickfont=dict(size=10.5, color="#6B7280"))
     )
     return fig
 
@@ -2896,12 +2920,11 @@ def get_active_audit_summary(df_sched: pd.DataFrame, today_str: str) -> dict:
         return {
             "has_data": False,
             "mode": "empty",
-            "banner_cls": "audit-banner-up",
-            "banner_text": "📅 등록된 심사 일정이 없습니다 (클릭하여 일정 등록)",
-            "status": "심사준비중",
+            "banner_text": "등록된 심사 일정이 없습니다",
+            "status": "일정 대기",
             "pct": 0,
-            "color": "#94A3B8",
-            "icon": "⏳",
+            "color": "#9CA3AF",
+            "icon": "",
             "row": None
         }
 
@@ -2917,12 +2940,11 @@ def get_active_audit_summary(df_sched: pd.DataFrame, today_str: str) -> dict:
         return {
             "has_data": True,
             "mode": "today",
-            "banner_cls": "audit-banner-today",
-            "banner_text": f"🚨 [금일 심사 · {r['심사일자'][5:]}] {r['심사명']}",
+            "banner_text": f"[금일 심사 · {r['심사일자'][5:]}] {r['심사명']}",
             "status": st_nm,
             "pct": cfg["pct"],
             "color": cfg["color"],
-            "icon": cfg["icon"],
+            "icon": "",
             "row": r
         }
 
@@ -2935,12 +2957,11 @@ def get_active_audit_summary(df_sched: pd.DataFrame, today_str: str) -> dict:
         return {
             "has_data": True,
             "mode": "in_progress",
-            "banner_cls": "audit-banner-today",
-            "banner_text": f"🔥 [심사 진행중 · {dt_short}] {r['심사명']}",
+            "banner_text": f"[진행 중 · {dt_short}] {r['심사명']}",
             "status": st_nm,
             "pct": cfg["pct"],
             "color": cfg["color"],
-            "icon": cfg["icon"],
+            "icon": "",
             "row": r
         }
 
@@ -2953,12 +2974,11 @@ def get_active_audit_summary(df_sched: pd.DataFrame, today_str: str) -> dict:
         return {
             "has_data": True,
             "mode": "upcoming",
-            "banner_cls": "audit-banner-up",
-            "banner_text": f"📅 차기 심사 ({r['심사일자'][5:]} · D-{d_left}) : {r['심사명']}",
+            "banner_text": f"[차기 심사 · D-{d_left}] {r['심사명']} ({r['심사일자'][5:]})",
             "status": st_nm,
             "pct": cfg["pct"],
             "color": cfg["color"],
-            "icon": cfg["icon"],
+            "icon": "",
             "row": r
         }
 
@@ -2970,12 +2990,11 @@ def get_active_audit_summary(df_sched: pd.DataFrame, today_str: str) -> dict:
     return {
         "has_data": True,
         "mode": "past",
-        "banner_cls": "audit-banner-up",
-        "banner_text": f"☑️ 최근 심사 ({dt_short}) : {r['심사명']}",
+        "banner_text": f"[최근 완료 · {dt_short}] {r['심사명']}",
         "status": st_nm,
         "pct": cfg["pct"],
         "color": cfg["color"],
-        "icon": cfg["icon"],
+        "icon": "",
         "row": r
     }
 
@@ -3001,11 +3020,11 @@ def render_team_cost_panel(container_col, team_name: str, bar_color: str, target
         rec_df = df_cost[df_cost["_기록여부"]] if "_기록여부" in df_cost.columns else df_cost[df_cost[act_col] > 0]
         pass_m_cnt = int((rec_df[act_col] >= rec_df[std_col]).sum()) if not rec_df.empty else 0
 
-        status_tag = "🟢 목표 순항" if t_proj_man >= t_target_man else "🟡 추세 보완 필요"
+        status_tag = "목표 순항" if t_proj_man >= t_target_man else "추세 보완 필요"
         st.markdown(f"""
         <div class="forecast-box" style="border-left-color:{bar_color}; margin-bottom:10px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <b style="font-size:15.5px; color:#00205B;">🏢 {html.escape(team_name)} (연간 목표 {target_uk}억원)</b>
+                <b style="font-size:15px; color:#111827;">{html.escape(team_name)} (연간 목표 {target_uk}억원)</b>
                 <span class="kpi-sub-pill" style="margin-top:0;">{status_tag}</span>
             </div>
             • <b>현재 누적 실적 :</b> <b>{t_sum_man:,.1f} 만원 ({t_sum_uk}억원)</b> — 연간 목표 대비 <b>{t_rate}%</b> 달성 (월 기준 달성: {pass_m_cnt}/{max(t_mcnt, 0)}개월)<br>
@@ -3022,11 +3041,11 @@ def render_team_cost_panel(container_col, team_name: str, bar_color: str, target
         ))
         fig_t.add_trace(go.Scatter(
             x=df_cost["월"], y=df_cost[std_col], name="팀 월 기준선",
-            mode="lines", line=dict(color="#DC2626", width=2.3, dash="dash")
+            mode="lines", line=dict(color="#EF4444", width=2.0, dash="dash")
         ))
         fig_t.add_trace(go.Scatter(
             x=df_cost["월"], y=t_act_l, name="실적 추세선",
-            mode="lines+markers", line=dict(color="#7C3AED", width=2.6)
+            mode="lines+markers", line=dict(color="#6366F1", width=2.4)
         ))
         if 0 <= t_last_i < 11:
             fig_t.add_trace(go.Scatter(
@@ -3034,8 +3053,8 @@ def render_team_cost_panel(container_col, team_name: str, bar_color: str, target
                 mode="lines+markers+text",
                 text=[f"{v:.0f}" if (v is not None and idx > t_last_i) else "" for idx, v in enumerate(t_fc_l)],
                 textposition="top center",
-                line=dict(color="#0EA5E9", width=2.6, dash="dot"),
-                marker=dict(symbol="diamond", size=8)
+                line=dict(color="#0EA5E9", width=2.4, dash="dot"),
+                marker=dict(symbol="diamond", size=7)
             ))
         max_v = max(
             float(df_cost[act_col].max()) if not df_cost.empty else 0.0,
@@ -3043,10 +3062,10 @@ def render_team_cost_panel(container_col, team_name: str, bar_color: str, target
             max([x for x in t_full_l if x is not None], default=0.0)
         )
         fig_t.update_layout(
-            height=360,
-            title=f"📊 {team_name} 월별 실적·기준선 및 잔여월 추세 예측 (단위: 만원)",
+            height=350,
+            title=f"{team_name} 월별 실적·기준선 및 잔여월 추세 예측 (단위: 만원)",
             paper_bgcolor="#FFFFFF", plot_bgcolor="#FFFFFF",
-            margin=dict(l=20, r=20, t=46, b=28),
+            margin=dict(l=20, r=20, t=44, b=26),
             yaxis=dict(range=[0, max_v * 1.25 if max_v > 0 else 1000]),
             legend=dict(orientation="h", yanchor="bottom", y=1.01, xanchor="right", x=1)
         )
@@ -3054,12 +3073,11 @@ def render_team_cost_panel(container_col, team_name: str, bar_color: str, target
 
 
 def render_manual_kpi_editor_section(kpi_key: str, key_suffix: str = ""):
-    """수동/병행 KPI 세부 조회 및 시트 영구 저장 공통 편집기"""
     info = st.session_state["manual_kpis"][kpi_key]
     c_preview, c_edit = st.columns([1.1, 1.35])
 
     with c_preview:
-        st.markdown(f"#### 📌 {info['title']} 현재 표시 데이터")
+        st.markdown(f"#### {info['title']} 현재 표시 데이터")
         st.markdown(f"""
         <div class="forecast-box">
             • <b>목표 :</b> {html.escape(info['target_text'])}<br>
@@ -3073,19 +3091,19 @@ def render_manual_kpi_editor_section(kpi_key: str, key_suffix: str = ""):
                 use_container_width=True,
                 key=f"chart_prev_{kpi_key}_{key_suffix}"
             )
-        st.markdown(f"##### 📋 {info['notes_title']}")
+        st.markdown(f"##### {info['notes_title']}")
         for line in info["notes"]:
             st.write(f"- {line}")
 
     with c_edit:
-        st.markdown("#### ✏️ 수치 및 세부 내역 수정 (시트 영구 저장)")
+        st.markdown("#### 수치 및 세부 내역 수정 (시트 영구 저장)")
         with st.form(key=f"form_{kpi_key}_{key_suffix}"):
             new_t_txt = st.text_input("목표 표시 문구", value=info["target_text"])
             new_a_txt = st.text_input("실적 표시 문구", value=info["actual_text"])
             new_badge = st.text_input("하단 배지 문구", value=info["sub_badge"])
 
             sig_opts = ["green", "yellow", "red", "gray"]
-            sig_labels = {"green": "🟢 양호 (초록)", "yellow": "🟡 주의 (노랑)", "red": "🔴 경고 (빨강)", "gray": "⚪ 대기 (회색)"}
+            sig_labels = {"green": "양호 (초록)", "yellow": "주의 (노랑)", "red": "경고 (빨강)", "gray": "대기 (회색)"}
             new_sig = st.selectbox(
                 "신호등 상태 선택",
                 sig_opts,
@@ -3105,7 +3123,7 @@ def render_manual_kpi_editor_section(kpi_key: str, key_suffix: str = ""):
             new_notes_title = st.text_input("세부 메모 소제목", value=info["notes_title"])
             new_notes_raw = st.text_area("세부 항목 (줄바꿈으로 구분)", value="\n".join(info["notes"]), height=120)
 
-            if st.form_submit_button("💾 변경사항 시트 영구 저장"):
+            if st.form_submit_button("변경사항 시트 영구 저장"):
                 updated_item = {
                     **info,
                     "target_text": new_t_txt.strip(),
@@ -3128,11 +3146,11 @@ def render_manual_kpi_editor_section(kpi_key: str, key_suffix: str = ""):
 
 
 # ==============================================================================
-# 6. 공정 현황 탭별 지난 이력 조회기 & 클레임 로트 역추적 렌더러
+# 공정 현황 탭별 지난 이력 조회기 & 클레임 로트 역추적 렌더러
 # ==============================================================================
 def render_rt_history_section(df_rt_hp: pd.DataFrame, df_rt_hc: pd.DataFrame):
     st.markdown("---")
-    st.subheader("📅 [누적 이력 DB] 지난 상온 공정관리 일보 날짜별 조회 (원본 탭 삭제 후에도 영구 보존)")
+    st.subheader("[누적 이력 DB] 지난 상온 공정관리 일보 날짜별 조회")
     if df_rt_hp.empty:
         st.info("아직 '_이력DB_상온생산' 숨김 탭에 누적된 과거 이력이 없습니다.")
         return
@@ -3168,12 +3186,12 @@ def render_rt_history_section(df_rt_hp: pd.DataFrame, df_rt_hc: pd.DataFrame):
 
     if notes_found:
         st.markdown(
-            f"<div class='issue-card-warn'><b>📌 [{html.escape(sel_dt)} ({html.escape(sel_tab)})] 기록된 특이사항 ({len(notes_found)}건)</b><br>"
+            f"<div class='issue-card-warn'><b>[{html.escape(sel_dt)} ({html.escape(sel_tab)})] 기록된 특이사항 ({len(notes_found)}건)</b><br>"
             + "<br>".join([f"• {html.escape(x)}" for x in notes_found]) + "</div>",
             unsafe_allow_html=True
         )
     else:
-        st.markdown(f"<div class='issue-card-ok'><b>🟢 [{html.escape(sel_dt)} ({html.escape(sel_tab)})] 특이사항 없이 정상 생산 마감</b></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='issue-card-ok'><b>[{html.escape(sel_dt)} ({html.escape(sel_tab)})] 특이사항 없이 정상 생산 마감</b></div>", unsafe_allow_html=True)
 
     hist_p_cols = [
         {"key": "ho", "label": "포장호기", "width": "8%", "align": "center"},
@@ -3188,11 +3206,11 @@ def render_rt_history_section(df_rt_hp: pd.DataFrame, df_rt_hc: pd.DataFrame):
     for _, rp in sub_p.iterrows():
         st_raw = str(rp.get("모니터링상태", ""))
         if "완료" in st_raw:
-            st_disp, st_cls = "🟢 확인완료", "cell-green"
+            st_disp, st_cls = "확인완료", "cell-green"
         elif "누락" in st_raw:
-            st_disp, st_cls = "🔴 소비기한 누락", "cell-red"
+            st_disp, st_cls = "소비기한 누락", "cell-red"
         else:
-            st_disp, st_cls = "🟡 확인시간 대기", "cell-yellow"
+            st_disp, st_cls = "확인시간 대기", "cell-yellow"
 
         rem_v = str(rp.get("멸균특이사항", "이상없음")).strip() or "이상없음"
         ster_sum = f"{rp.get('매칭멸균기', '-')} | {rp.get('멸균핵심수치_요약', '-')}"
@@ -3208,13 +3226,13 @@ def render_rt_history_section(df_rt_hp: pd.DataFrame, df_rt_hc: pd.DataFrame):
     st.markdown(render_html_table(hist_p_cols, hist_p_rows), unsafe_allow_html=True)
 
     if not sub_c.empty:
-        with st.expander(f"🔥 [{sel_dt}] 멸균기(CCP-1B/2P) 및 포장기(CCP-3B) 세부 모니터링 기록 보기 ({len(sub_c)}건)"):
+        with st.expander(f"[{sel_dt}] 멸균기(CCP-1B/2P) 및 포장기(CCP-3B) 세부 모니터링 기록 보기 ({len(sub_c)}건)"):
             st.dataframe(sub_c.drop(columns=["최종백업일시"], errors="ignore"), use_container_width=True, hide_index=True)
 
 
 def render_dairy_history_section(df_dy_hp: pd.DataFrame, df_dy_hc: pd.DataFrame):
     st.markdown("---")
-    st.subheader("📅 [누적 이력 DB] 지난 우유·발효유 포장일보 날짜별 조회 (결재 후 탭 삭제분 자동 보존)")
+    st.subheader("[누적 이력 DB] 지난 우유·발효유 포장일보 날짜별 조회")
     if df_dy_hp.empty and df_dy_hc.empty:
         st.info("아직 '_이력DB_유제품포장' 숨김 탭에 누적된 이력이 없습니다.")
         return
@@ -3257,10 +3275,10 @@ def render_dairy_history_section(df_dy_hp: pd.DataFrame, df_dy_hc: pd.DataFrame)
                     rem_lines.append(f"[{cr.get('라인구분', '')}] {cr.get('세부항목', '')} : {rv}")
 
         ptime_html = " &nbsp;|&nbsp; ".join([html.escape(x) for x in ptime_lines]) if ptime_lines else "기록된 포장 생산시간 없음"
-        rem_html = "<br>".join([f"• ⚠️ {html.escape(x)}" for x in rem_lines]) if rem_lines else "• 🟢 포장 특이사항 없음 (이상없음)"
+        rem_html = "<br>".join([f"• {html.escape(x)}" for x in rem_lines]) if rem_lines else "• 포장 특이사항 없음 (이상없음)"
         box_cls = "issue-card-warn" if rem_lines else "issue-card-ok"
         st.markdown(
-            f"<div class='{box_cls}'><b>⏱️ [{html.escape(sel_d_dt)}] 포장별 생산시간 :</b> {ptime_html}<br>{rem_html}</div>",
+            f"<div class='{box_cls}'><b>[{html.escape(sel_d_dt)}] 포장별 생산시간 :</b> {ptime_html}<br>{rem_html}</div>",
             unsafe_allow_html=True
         )
 
@@ -3298,7 +3316,7 @@ def render_dairy_history_section(df_dy_hp: pd.DataFrame, df_dy_hc: pd.DataFrame)
 
     ccp_only = sub_dc[sub_dc["기록분류"] == "CCP모니터링"] if (not sub_dc.empty and "기록분류" in sub_dc.columns) else pd.DataFrame()
     if not ccp_only.empty:
-        st.markdown(f"##### 🛡️ [{sel_d_dt}] 살균기(전처리) 및 금속검출기 CCP 검증 모니터링 이력")
+        st.markdown(f"##### [{sel_d_dt}] 살균기(전처리) 및 금속검출기 CCP 검증 모니터링 이력")
         ccp_cols = [
             {"key": "ln", "label": "라인", "width": "10%", "align": "center"},
             {"key": "item", "label": "CCP 설비·항목", "width": "24%", "align": "center"},
@@ -3319,7 +3337,7 @@ def render_dairy_history_section(df_dy_hp: pd.DataFrame, df_dy_hc: pd.DataFrame)
 
 def render_soy_history_section(df_soy_hist: pd.DataFrame):
     st.markdown("---")
-    st.subheader("📅 [누적 이력 DB] 지난 두유 배양검사 날짜별 조회 (탭 날짜 역산 보정 · 삭제 탭 영구 보존)")
+    st.subheader("[누적 이력 DB] 지난 두유 배양검사 날짜별 조회")
     if df_soy_hist.empty:
         st.info("아직 '_이력DB_두유배양' 숨김 탭에 누적된 과거 이력이 없습니다.")
         return
@@ -3357,13 +3375,13 @@ def render_soy_history_section(df_soy_hist: pd.DataFrame):
     for _, sr in sub_s.iterrows():
         st_txt = str(sr.get("진행상태", "")).strip()
         if st_txt == "검사전":
-            st_disp, st_cls = "🟡 검사전", "cell-yellow"
+            st_disp, st_cls = "검사전", "cell-yellow"
             jdg_disp = "검사전"
         elif st_txt == "부적합" or "부적합" in str(sr.get("판정", "")):
-            st_disp, st_cls = "🔴 부적합", "cell-red"
+            st_disp, st_cls = "부적합", "cell-red"
             jdg_disp = f"{sr.get('오염수량', '-')} / {sr.get('판정', '-')}"
         else:
-            st_disp, st_cls = "🟢 검사완료", "cell-green"
+            st_disp, st_cls = "검사완료", "cell-green"
             jdg_disp = f"{sr.get('오염수량', '0 개')} / {sr.get('판정', '적합')}"
 
         vol_s = str(sr.get("용량_mL", "-")).strip()
@@ -3386,7 +3404,6 @@ def render_soy_history_section(df_soy_hist: pd.DataFrame):
 
 
 def render_lot_traceability_tab(p_data: dict, widget_prefix: str = "lot"):
-    """'제품명 식품안전나라' A열 제품명 + 소비기한 기반 전 공정(생산·CCP·특이사항·배양 가동시간) 통합 역추적"""
     master_prods = p_data.get("master_products", [])
     fsk_cnt = len(p_data.get("fsk_products", []))
     df_rt_hp = p_data.get("df_rt_hist_p", pd.DataFrame())
@@ -3397,9 +3414,9 @@ def render_lot_traceability_tab(p_data: dict, widget_prefix: str = "lot"):
 
     st.markdown(f"""
     <div class="trace-hero-box">
-        <b style="font-size:15.5px; color:#00205B;">🔍 클레임·품질 문의 대비 로트(제품명 + 소비기한) 원스톱 이력 역추적</b><br>
+        <b style="font-size:15px; color:#111827;">클레임·품질 문의 대비 로트(제품명 + 소비기한) 원스톱 이력 역추적</b><br>
         • <b>제품명 표준 연동 :</b> 상온공정일보 내 <b>[제품명 식품안전나라] 탭 A열 품목({fsk_cnt:,}종)</b> 및 유제품·일보 품목을 통합 연동했습니다.<br>
-        • <b>자동 교차 조회 범위 :</b> ① 실제 생산일자·포장호기·확인시간 &nbsp;|&nbsp; ② 살균/멸균기·포장기 CCP 및 <b>당일 현장 특이사항</b> &nbsp;|&nbsp; ③ 두유 배양검사 <b>실제 생산 시작~종료 시간(실가동시간)</b>·오염·판정 결과
+        • <b>자동 교차 조회 범위 :</b> 실제 생산일자·포장호기·확인시간 &nbsp;|&nbsp; 살균/멸균기·포장기 CCP 및 <b>당일 현장 특이사항</b> &nbsp;|&nbsp; 두유 배양검사 <b>실제 생산 시작~종료 시간(실가동시간)</b>·오염·판정 결과
     </div>
     """, unsafe_allow_html=True)
 
@@ -3408,15 +3425,15 @@ def render_lot_traceability_tab(p_data: dict, widget_prefix: str = "lot"):
 
     q_c1, q_c2, q_c3 = st.columns([1.8, 1.1, 1.1])
     with q_c1:
-        sel_prod = st.selectbox("1️⃣ 제품명 선택 ('제품명 식품안전나라' A열 연동 · 타이핑 검색)", prod_options, key=f"{widget_prefix}_sel_prod")
+        sel_prod = st.selectbox("1. 제품명 선택 ('제품명 식품안전나라' A열 연동 · 타이핑 검색)", prod_options, key=f"{widget_prefix}_sel_prod")
     with q_c2:
-        in_exp = st.text_input("2️⃣ 소비기한 입력 (예: 2027-05-13, 27.05.13, 11.25)", placeholder="연.월.일 또는 월.일 입력", key=f"{widget_prefix}_in_exp")
+        in_exp = st.text_input("2. 소비기한 입력 (예: 2027-05-13, 27.05.13, 11.25)", placeholder="연.월.일 또는 월.일 입력", key=f"{widget_prefix}_in_exp")
     with q_c3:
-        in_kw = st.text_input("3️⃣ 추가 키워드 필터 (선택사항)", placeholder="부분 품목명 직접 검색 시 입력", key=f"{widget_prefix}_in_kw")
+        in_kw = st.text_input("3. 추가 키워드 필터 (선택사항)", placeholder="부분 품목명 직접 검색 시 입력", key=f"{widget_prefix}_in_kw")
 
     has_cond = (sel_prod != default_opt) or bool(in_exp.strip()) or bool(in_kw.strip())
     if not has_cond:
-        st.info("👆 위에서 **제품명**을 선택하거나 **소비기한**을 입력하면 상온·유제품·배양검사 누적 이력 DB에서 일치하는 모든 로트 정보를 즉시 찾아옵니다.")
+        st.info("위에서 제품명을 선택하거나 소비기한을 입력하면 상온·유제품·배양검사 누적 이력 DB에서 일치하는 로트 정보를 즉시 조회합니다.")
         return
 
     exp_q = parse_exp_query_info(in_exp)
@@ -3464,16 +3481,16 @@ def render_lot_traceability_tab(p_data: dict, widget_prefix: str = "lot"):
 
     total_hits = len(matched_rt) + len(matched_soy) + len(matched_dy)
     if total_hits == 0:
-        st.warning("입력하신 조건(제품명·소비기한)과 일치하는 생산·배양 이력이 누적 DB에서 발견되지 않았습니다. 소비기한을 '월.일(예: 05.13)' 형태로 줄이거나 제품 선택을 '전체'로 두고 검색해 보세요.")
+        st.warning("입력하신 조건(제품명·소비기한)과 일치하는 생산·배양 이력이 누적 DB에서 발견되지 않았습니다.")
         return
 
     s1, s2, s3 = st.columns(3)
-    s1.metric("🧃 상온 공정일보 매칭", f"{len(matched_rt):,} 건")
-    s2.metric("🧪 두유 배양검사 매칭 (실가동시간)", f"{len(matched_soy):,} 건")
-    s3.metric("🥛 유제품 포장일보 매칭", f"{len(matched_dy):,} 건")
+    s1.metric("상온 공정일보 매칭", f"{len(matched_rt):,} 건")
+    s2.metric("두유 배양검사 매칭 (실가동시간)", f"{len(matched_soy):,} 건")
+    s3.metric("유제품 포장일보 매칭", f"{len(matched_dy):,} 건")
 
     if not matched_rt.empty:
-        st.markdown("### 🧃 1. 상온 공정관리 일보 — 생산 호기 · 멸균 CCP · 당일 특이사항")
+        st.markdown("#### 1. 상온 공정관리 일보 — 생산 호기 · 멸균 CCP · 당일 특이사항")
         rt_trace_cols = [
             {"key": "dt", "label": "생산일자 (탭)", "width": "11%", "align": "center"},
             {"key": "ho", "label": "포장호기", "width": "7%", "align": "center"},
@@ -3509,11 +3526,11 @@ def render_lot_traceability_tab(p_data: dict, widget_prefix: str = "lot"):
             rt_dt_tabs = matched_rt[["생산일자", "원본탭명"]].drop_duplicates()
             ccp_sub = df_rt_hc.merge(rt_dt_tabs, on=["생산일자", "원본탭명"], how="inner")
             if not ccp_sub.empty:
-                with st.expander(f"🔎 해당 생산일 멸균기(CCP-1B/2P) · 포장기(CCP-3B) 전체 세부 기록 펼쳐보기 ({len(ccp_sub)}건)"):
+                with st.expander(f"해당 생산일 멸균기(CCP-1B/2P) · 포장기(CCP-3B) 전체 세부 기록 보기 ({len(ccp_sub)}건)"):
                     st.dataframe(ccp_sub.drop(columns=["최종백업일시"], errors="ignore"), use_container_width=True, hide_index=True)
 
     if not matched_soy.empty:
-        st.markdown("### 🧪 2. 두유 배양검사 일보 — 실 생산 시작~종료 시간 · 오염수량 · 판정 이력")
+        st.markdown("#### 2. 두유 배양검사 일보 — 실 생산 시작~종료 시간 · 오염수량 · 판정 이력")
         insp_c = "확정검사일_탭기준" if "확정검사일_탭기준" in matched_soy.columns else "검사일_표기"
         soy_trace_cols = [
             {"key": "pdt", "label": "실제 생산일", "width": "9%", "align": "center"},
@@ -3531,11 +3548,11 @@ def render_lot_traceability_tab(p_data: dict, widget_prefix: str = "lot"):
         for _, sr in matched_soy.iterrows():
             st_s = str(sr.get("진행상태", "")).strip()
             if st_s == "검사전":
-                s_cls, j_txt = "cell-yellow", "🟡 검사전"
+                s_cls, j_txt = "cell-yellow", "검사전"
             elif st_s == "부적합" or "부적합" in str(sr.get("판정", "")):
-                s_cls, j_txt = "cell-red", f"🔴 {sr.get('오염수량', '-')} / {sr.get('판정', '-')}"
+                s_cls, j_txt = "cell-red", f"{sr.get('오염수량', '-')} / {sr.get('판정', '-')}"
             else:
-                s_cls, j_txt = "cell-green", f"🟢 {sr.get('오염수량', '0 개')} / {sr.get('판정', '적합')}"
+                s_cls, j_txt = "cell-green", f"{sr.get('오염수량', '0 개')} / {sr.get('판정', '적합')}"
 
             rem_s = str(sr.get("특이사항", "없음")).strip() or "없음"
             soy_trace_rows.append({
@@ -3553,7 +3570,7 @@ def render_lot_traceability_tab(p_data: dict, widget_prefix: str = "lot"):
         st.markdown(render_html_table(soy_trace_cols, soy_trace_rows), unsafe_allow_html=True)
 
     if not matched_dy.empty:
-        st.markdown("### 🥛 3. 유제품 포장 공정관리 일보 — 확인시간 · 포장 생산시간 · 살균기 CCP · 특이사항")
+        st.markdown("#### 3. 유제품 포장 공정관리 일보 — 확인시간 · 포장 생산시간 · 살균기 CCP · 특이사항")
         dy_trace_cols = [
             {"key": "dt", "label": "생산일자", "width": "10%", "align": "center"},
             {"key": "ln", "label": "라인구분", "width": "9%", "align": "center"},
@@ -3597,7 +3614,7 @@ def render_lot_traceability_tab(p_data: dict, widget_prefix: str = "lot"):
 
 
 # ==============================================================================
-# 7. 실시간 요약 수치 집계
+# 실시간 요약 수치 집계
 # ==============================================================================
 cost_target_uk = cost_targets["부문"]
 cost_actual_man = round(float(df_cost["부문_실적(만원)"].sum()), 1) if not df_cost.empty else 0.0
@@ -3692,7 +3709,7 @@ allergy_raw_cnt = len(df_raw_sub[df_raw_sub["신규알레르기"].astype(str).st
 
 
 # ==============================================================================
-# 8. 좌측 3단 탭 네비게이션 사이드바 렌더링 (품질안전부문 / 식품안전팀 / 품질관리팀)
+# 좌측 사이드바 (QUALITY ONE 스타일 브랜드 로고 + 텍스트 네비게이션)
 # ==============================================================================
 ACTIVE_MENU_ALIAS = {
     "cost": "dept_kpi8",
@@ -3706,9 +3723,12 @@ effective_nav_view = ACTIVE_MENU_ALIAS.get(st.session_state.current_view, st.ses
 
 with st.sidebar:
     st.markdown("""
-    <div class="sb-brand-box">
-        <div class="sb-brand-title">🥛 YONSEI DAIRY</div>
-        <div class="sb-brand-sub">품질안전부문 AX 스마트 관제 플랫폼</div>
+    <div class="qo-brand-wrap">
+        <div class="qo-logo-mark">Y</div>
+        <div>
+            <div class="qo-brand-name">YONSEI QUALITY</div>
+            <div class="qo-brand-sub">Integrated Quality Platform</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -3719,175 +3739,191 @@ with st.sidebar:
             st.button(
                 v_label,
                 key=f"sb_nav_{v_key}",
-                type="primary" if is_cur else "secondary",
+                type="secondary" if is_cur else "secondary",
                 use_container_width=True,
                 on_click=set_view,
                 args=(v_key,)
             )
 
-    st.markdown("<hr style='margin:14px 0 10px 0; border-color:#E2E8F0;'>", unsafe_allow_html=True)
-    st.button("🔄 시트 실시간 동기화", key="sb_btn_sync", use_container_width=True, on_click=trigger_manual_sync)
+    st.markdown("<div style='height:14px; border-bottom:1px solid #F2F4F7; margin-bottom:10px;'></div>", unsafe_allow_html=True)
+    st.button("데이터 실시간 동기화", key="sb_btn_sync", type="secondary", use_container_width=True, on_click=trigger_manual_sync)
     st.markdown(
-        f"<div style='font-size:11.2px; color:#64748B; margin-top:6px; line-height:1.45;'>"
-        f"• 동기화 : {bundle['loaded_at']}<br>"
-        f"• 신호등 : 🟢양호 &nbsp;🟡주의 &nbsp;🔴경고</div>",
+        f"<div style='font-size:11px; color:#9CA3AF; margin-top:8px; padding:0 4px; line-height:1.5;'>"
+        f"업데이트 : {bundle['loaded_at']}<br>"
+        f"연세유업 아산공장 품질안전부문</div>",
         unsafe_allow_html=True
     )
 
 
 # ==============================================================================
-# [화면 1] 품질안전부문 (All) · 실시간 통합 관제판 (첫 화면)
+# [화면 1] 통합 대시보드 (QUALITY ONE 레퍼런스 레이아웃 & 타이포그래피 적용)
 # ==============================================================================
 if st.session_state.current_view == "main":
+    # 최상단 글로벌 검색바 & 실시간 상태 표시줄 (레퍼런스 이미지 상단 구조)
+    gt_c1, gt_c2, gt_c3 = st.columns([2.2, 2.0, 0.45])
+    with gt_c1:
+        st.text_input(
+            "글로벌 빠른 검색",
+            placeholder="LOT(소비기한), 제품명 입력 후 Enter 시 즉시 이력 역추적...",
+            label_visibility="collapsed",
+            key="global_top_search",
+            on_change=on_global_quick_search
+        )
+    with gt_c2:
+        t_short = bundle["loaded_at"].split(" ")[-2][:5] if " " in bundle["loaded_at"] else bundle["loaded_at"]
+        st.markdown(
+            f"<div style='display:flex; justify-content:flex-end; align-items:center; gap:10px; padding-top:3px;'>"
+            f"<span class='live-status-pill'><span class='live-dot-green'></span>실시간 운영 중 &nbsp;·&nbsp; 업데이트 {html.escape(t_short)}</span>"
+            f"<span style='font-size:12.5px; font-weight:600; color:#374151;'>품질안전부문</span>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+    with gt_c3:
+        st.button("새로고침", key="top_quick_sync", type="secondary", use_container_width=True, on_click=trigger_manual_sync)
+
+    weekdays_kr = ["월", "화", "수", "목", "금", "토", "일"]
+    now_dt = now_kst()
+    date_label_kr = f"{now_dt.year}년 {now_dt.month}월 {now_dt.day}일 ({weekdays_kr[now_dt.weekday()]})"
+
     st.markdown(f"""
-    <div class="yonsei-header-bar">
-        <span class="yonsei-title">품질안전부문 (All) · 실시간 통합 대시보드</span>
-        <span class="live-status-pill">● 실시간 운영중 &nbsp;|&nbsp; 기준 : {bundle['loaded_at']}</span>
+    <div class="qo-hero-wrap">
+        <div>
+            <div class="qo-hero-title">품질안전부문 실시간 통합 관제</div>
+            <div class="qo-hero-sub">{date_label_kr} &nbsp;|&nbsp; 현장 CCP · 표시사항 심의 · 대내외 심사 및 부문 핵심 지표를 실시간으로 관리합니다.</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
     if all_load_errors:
-        with st.expander(f"⚠️ 시트 연동 점검 필요 항목 ({len(all_load_errors)}건)", expanded=False):
+        with st.expander(f"데이터 연동 확인 필요 ({len(all_load_errors)}건)", expanded=False):
             for err_line in all_load_errors:
                 st.write(f"- {err_line}")
 
     # ------------------------------------------------------------------
-    # [상단 구역 - 확대 배치] 실시간 현장 공정 · 표시사항 심의/특이사항 · 심사 온도계/일정
+    # [상단 구역 - 대형 3카드] 공정 실시간 · 표시사항 심의/특이사항 · 심사 진행상황/일정
     # ------------------------------------------------------------------
-    st.markdown("<div class='section-tag-title'>🔴 현장 실시간 현황 & 대내외 특이사항 (모든 항목 클릭 시 세부 페이지 이동)</div>", unsafe_allow_html=True)
     top_c1, top_c2, top_c3 = st.columns([1.0, 1.18, 1.12])
 
-    # 1) 상단 좌측: 당일 공정 CCP & 배양 실시간 특이사항
+    # 1) 좌측 상단: 당일 공정 CCP & 배양 실시간 현황
     with top_c1:
         with st.container(border=True):
-            st.button(
-                "🏭 당일 공정 CCP & 배양 실시간 특이사항   상세보기 ›",
-                key="main_go_process",
-                type="primary",
-                use_container_width=True,
-                on_click=set_view,
-                args=("process",)
-            )
+            render_card_header("당일 공정 CCP & 배양 현황", "process", "main_go_process", "전체보기 ›")
 
-            rt_badge_cls = "badge-err" if red_rt_cnt > 0 else ("badge-warn" if wait_rt_cnt > 0 else "badge-ok")
-            rt_badge_txt = "기준이탈 확인" if red_rt_cnt > 0 else (f"확인대기 {wait_rt_cnt}건" if wait_rt_cnt > 0 else "적합")
+            if red_rt_cnt > 0:
+                rt_dot, rt_b_cls, rt_b_txt = "dot-red", "badge-err", "기준이탈 확인"
+            elif wait_rt_cnt > 0:
+                rt_dot, rt_b_cls, rt_b_txt = "dot-amber", "badge-warn", f"확인대기 {wait_rt_cnt}건"
+            else:
+                rt_dot, rt_b_cls, rt_b_txt = "dot-green", "badge-ok", "CCP 적합"
 
-            dairy_badge_cls = "badge-ok" if active_dairy_cnt > 0 else "badge-warn"
-            dairy_badge_txt = "점검완료" if active_dairy_cnt > 0 else "생산없음"
+            if active_dairy_cnt > 0:
+                dy_dot, dy_b_cls, dy_b_txt = "dot-green", "badge-ok", "점검 완료"
+            else:
+                dy_dot, dy_b_cls, dy_b_txt = "dot-amber", "badge-neutral", "생산 대기"
 
             if soy_contam_total > 0:
-                soy_badge_cls, soy_badge_txt = "badge-err", f"오염 {soy_contam_total}건"
+                sy_dot, sy_b_cls, sy_b_txt = "dot-red", "badge-err", f"오염 {soy_contam_total}건"
             elif soy_blocks_cnt == 0:
-                soy_badge_cls, soy_badge_txt = "badge-warn", "기록대기"
+                sy_dot, sy_b_cls, sy_b_txt = "dot-amber", "badge-neutral", "기록 대기"
             elif soy_uninspected_cnt > 0:
-                soy_badge_cls = "badge-warn"
-                soy_badge_txt = f"검사전 대기 ({soy_uninspected_cnt}호기)"
+                sy_dot, sy_b_cls, sy_b_txt = "dot-amber", "badge-warn", f"검사전 {soy_uninspected_cnt}호기"
             else:
-                soy_badge_cls, soy_badge_txt = "badge-ok", "검사완료(적합)"
+                sy_dot, sy_b_cls, sy_b_txt = "dot-green", "badge-ok", "검사 완료"
 
             board_lines = []
             for tn in today_real_notes:
-                board_lines.append(f"<div style='padding:3px 0; border-bottom:1px dashed #E2E8F0;'><b style='color:#B45309;'>[금일 {html.escape(rt_t_tab)}]</b> {html.escape(tn)}</div>")
+                board_lines.append(f"<div style='padding:3px 0; border-bottom:1px solid #F2F4F7;'><b style='color:#B45309;'>[금일 {html.escape(rt_t_tab)}]</b> {html.escape(tn)}</div>")
             for yn in yest_real_notes:
-                board_lines.append(f"<div style='padding:3px 0; border-bottom:1px dashed #E2E8F0;'><b style='color:#003876;'>[전일 {html.escape(rt_y_tab)}]</b> {html.escape(yn)}</div>")
+                board_lines.append(f"<div style='padding:3px 0; border-bottom:1px solid #F2F4F7;'><b style='color:#1D4ED8;'>[전일 {html.escape(rt_y_tab)}]</b> {html.escape(yn)}</div>")
             if not board_lines:
-                board_lines.append(f"<div style='color:#166534; font-weight:700; padding:4px 0;'>🟢 금일({html.escape(rt_t_tab)}) 및 전일({html.escape(rt_y_tab)}) 설비·품질 특이사항 없음</div>")
+                board_lines.append(f"<div style='color:#059669; font-weight:600; padding:4px 0;'>금일({html.escape(rt_t_tab)}) 및 전일({html.escape(rt_y_tab)}) 설비·품질 특이사항 없음</div>")
 
             st.markdown(f"""
-            <div class="proc-check-row">
-                <span><span class="proc-check-label">상온 멸균·포장 CCP</span><span class="proc-check-meta">({html.escape(rt_t_tab)}탭 · {active_rt_cnt}건 가동)</span></span>
-                <span class="badge-pill {rt_badge_cls}">{rt_badge_txt}</span>
+            <div class="qo-list-row">
+                <span style="display:flex; align-items:center;">
+                    <span class="qo-row-dot {rt_dot}"></span>
+                    <b style="color:#111827;">상온 멸균·포장 CCP</b>
+                    <span style="color:#6B7280; font-size:11.8px; margin-left:6px;">{html.escape(rt_t_tab)}탭 · {active_rt_cnt}건 가동</span>
+                </span>
+                <span class="badge-pill {rt_b_cls}">{rt_b_txt}</span>
             </div>
-            <div class="proc-check-row">
-                <span><span class="proc-check-label">유제품 포장 (우유·발효유)</span><span class="proc-check-meta">(금일 {active_dairy_cnt}건 기록)</span></span>
-                <span class="badge-pill {dairy_badge_cls}">{dairy_badge_txt}</span>
+            <div class="qo-list-row">
+                <span style="display:flex; align-items:center;">
+                    <span class="qo-row-dot {dy_dot}"></span>
+                    <b style="color:#111827;">유제품 포장 관리</b>
+                    <span style="color:#6B7280; font-size:11.8px; margin-left:6px;">우유·발효유 {active_dairy_cnt}건</span>
+                </span>
+                <span class="badge-pill {dy_b_cls}">{dy_b_txt}</span>
             </div>
-            <div class="proc-check-row">
-                <span><span class="proc-check-label">두유 배양검사</span><span class="proc-check-meta">({html.escape(proc_data['soy_default_tab'])}탭 · {soy_total_samples:,}개)</span></span>
-                <span class="badge-pill {soy_badge_cls}">{soy_badge_txt}</span>
+            <div class="qo-list-row">
+                <span style="display:flex; align-items:center;">
+                    <span class="qo-row-dot {sy_dot}"></span>
+                    <b style="color:#111827;">두유 배양검사</b>
+                    <span style="color:#6B7280; font-size:11.8px; margin-left:6px;">{html.escape(proc_data['soy_default_tab'])}탭 · {soy_total_samples:,}개</span>
+                </span>
+                <span class="badge-pill {sy_b_cls}">{sy_b_txt}</span>
             </div>
-            <div style="font-size:12.3px; font-weight:800; color:#00205B; margin:8px 0 4px 2px;">📋 금일·전일 설비 및 공정 특이사항</div>
-            <div class="tall-scroll-box" style="height:142px; border-left:4px solid #003876;">
+            <div style="font-size:12px; font-weight:700; color:#4B5563; margin-top:12px;">금일·전일 설비 및 공정 특이사항</div>
+            <div class="qo-sub-box" style="min-height:112px; max-height:118px;">
                 {''.join(board_lines)}
             </div>
             """, unsafe_allow_html=True)
 
-    # 2) 상단 중앙 (확대): 표시사항 심의 진행 목록 + 표시사항 특이사항 입력·메모란
+    # 2) 중앙 상단: 표시사항 심의 현황 및 특이사항
     with top_c2:
         with st.container(border=True):
-            st.button(
-                "🏷️ 표시사항 심의 현황 및 특이사항   상세보기 ›",
-                key="main_go_label_status",
-                type="primary",
-                use_container_width=True,
-                on_click=set_view,
-                args=("label_status",)
-            )
+            render_card_header("표시사항 심의 현황 및 특이사항", "label_status", "main_go_label_status", "전체보기 ›")
 
             if rev_rows_structured:
                 rev_list_html = "".join([
-                    f"<div class='review-list-row'>"
-                    f"<span style='overflow:hidden; text-overflow:ellipsis; white-space:nowrap;'>"
-                    f"<b style='color:#003876;'>[{html.escape(r['dept'])}]</b> {html.escape(r['title'])}</span>"
+                    f"<div class='qo-list-row' style='padding:6px 2px;'>"
+                    f"<span style='overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12.5px;'>"
+                    f"<span style='color:#2563EB; font-weight:600; margin-right:5px;'>[{html.escape(r['dept'])}]</span>"
+                    f"{html.escape(r['title'])}</span>"
                     f"<span class='badge-pill badge-info'>검토중</span>"
                     f"</div>"
                     for r in rev_rows_structured
                 ])
             else:
-                rev_list_html = "<div style='color:#64748B; padding:8px 2px;'>현재 식품안전팀 검토 대기 중인 품목이 없습니다.</div>"
+                rev_list_html = "<div style='color:#9CA3AF; padding:10px 2px; font-size:12.5px;'>현재 검토 대기 중인 품목이 없습니다.</div>"
 
             memo_safe = html.escape(st.session_state.get("label_special_memo", "")).replace("\n", "<br>")
-            allergy_alert_str = f" · ⚠️신규알레르기 {allergy_raw_cnt}건" if allergy_raw_cnt > 0 else ""
+            allergy_alert_str = f" · 신규알레르기 {allergy_raw_cnt}건" if allergy_raw_cnt > 0 else ""
 
             st.markdown(f"""
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <span style="font-size:12.8px; font-weight:800; color:#00205B;">
-                    📌 현재 식안팀 검토중 목록 (<span style="color:#DC2626;">{reviewing_cnt}건</span>)
+                <span style="font-size:12.3px; font-weight:700; color:#374151;">
+                    식품안전팀 검토 진행 목록 <span style="color:#2563EB; margin-left:3px;">{reviewing_cnt}건</span>
                 </span>
-                <span style="font-size:11.8px; font-weight:700; color:#475569;">
-                    누적 완료 {completed_cnt:,}건{html.escape(allergy_alert_str)}
-                </span>
+                <span class="qo-card-caption">누적 완료 {completed_cnt:,}건{html.escape(allergy_alert_str)}</span>
             </div>
-            <div class="tall-scroll-box" style="height:142px;">
+            <div class="qo-scroll-area" style="min-height:132px; max-height:132px; border:1px solid #F2F4F7; border-radius:8px; padding:4px 8px;">
                 {rev_list_html}
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:7px;">
-                <span style="font-size:12.5px; font-weight:800; color:#92400E;">📝 표시사항 특이사항 (원자재 변경 · 알레르기 점검 메모)</span>
-            </div>
-            <div class="memo-board-view">{memo_safe if memo_safe else '등록된 표시사항 특이사항 메모가 없습니다.'}</div>
+            <div style="font-size:12px; font-weight:700; color:#4B5563; margin-top:10px;">표시사항 특이사항 메모 (원자재 변경 · 알레르기 점검)</div>
+            <div class="qo-sub-box" style="min-height:68px; max-height:74px;">{memo_safe if memo_safe else '등록된 특이사항 메모가 없습니다.'}</div>
             """, unsafe_allow_html=True)
 
-            lb_b1, lb_b2 = st.columns([1.25, 1.0])
+            lb_b1, lb_b2 = st.columns([1.2, 1.0])
             with lb_b1:
-                with st.popover("✏️ 표시사항 특이사항 메모 작성·저장", use_container_width=True):
+                with st.popover("특이사항 메모 편집", use_container_width=True):
                     with st.form("form_quick_lbl_memo"):
                         in_lbl_memo = st.text_area(
-                            "표시사항 특이사항 입력 (시트 영구 저장)",
+                            "표시사항 특이사항 (시트 영구 저장)",
                             value=st.session_state.get("label_special_memo", ""),
-                            height=110
+                            height=105
                         )
-                        if st.form_submit_button("💾 메모 시트 저장"):
-                            ok_lm, msg_lm = save_special_boards_to_sheet(in_lbl_memo.strip(), st.session_state["claim_special_list"])
-                            if ok_lm:
-                                st.success(msg_lm)
-                            else:
-                                st.warning(msg_lm)
+                        if st.form_submit_button("저장"):
+                            save_special_boards_to_sheet(in_lbl_memo.strip(), st.session_state["claim_special_list"])
                             st.rerun()
             with lb_b2:
-                st.button("🧬 원자재 DB 보기 ›", key="main_go_raw_db", use_container_width=True, on_click=set_view, args=("label_issue",))
+                st.button("원자재 표시사항 DB ›", key="main_go_raw_db", type="secondary", use_container_width=True, on_click=set_view, args=("label_issue",))
 
-    # 3) 상단 우측 (확대): 심사 진행상황 온도계 게이지 & 연간 심사 일정 리스트
+    # 3) 우측 상단: 심사 진행상황 및 일정
     with top_c3:
         aud_sum = get_active_audit_summary(df_audit_sched, today_kst_str)
         with st.container(border=True):
-            st.button(
-                "🌡️ 심사 진행상황 및 일정   상세보기 ›",
-                key="main_go_audit",
-                type="primary",
-                use_container_width=True,
-                on_click=set_view,
-                args=("kpi_5",)
-            )
+            render_card_header("심사 진행상황 및 일정", "kpi_5", "main_go_audit", "일정관리 ›")
 
             today_d_obj = now_kst().date()
             if df_audit_sched is not None and not df_audit_sched.empty:
@@ -3896,137 +3932,123 @@ if st.session_state.current_view == "main":
                     s_dt = pd.to_datetime(sr["심사일자"], errors="coerce")
                     dt_disp = str(sr["심사일자"])[5:] if len(str(sr["심사일자"])) >= 10 else str(sr["심사일자"])
                     st_nm = str(sr.get("진행현황", "심사준비중"))
-                    sc_str = f" · {sr['점수']}" if str(sr.get("점수", "")).strip() else ""
+                    sc_str = f" ({sr['점수']})" if str(sr.get("점수", "")).strip() else ""
 
                     if pd.notna(s_dt):
                         diff_d = (s_dt.date() - today_d_obj).days
                         if diff_d == 0:
-                            d_pill_cls, d_pill_txt = "badge-err", "🚨 금일심사"
+                            d_pill_cls, d_pill_txt = "badge-err", "금일 심사"
                         elif diff_d > 0:
                             d_pill_cls = "badge-warn" if diff_d <= 7 else "badge-info"
                             d_pill_txt = f"D-{diff_d}"
                         else:
-                            d_pill_cls = "badge-ok" if st_nm == "심사종료" else "badge-info"
-                            d_pill_txt = f"종료{sc_str}" if st_nm == "심사종료" else st_nm
+                            d_pill_cls = "badge-ok" if st_nm == "심사종료" else "badge-neutral"
+                            d_pill_txt = f"완료{sc_str}" if st_nm == "심사종료" else st_nm
                     else:
-                        d_pill_cls, d_pill_txt = "badge-info", st_nm
+                        d_pill_cls, d_pill_txt = "badge-neutral", st_nm
 
                     sched_items_html.append(
-                        f"<div class='audit-sched-item'>"
-                        f"<span style='overflow:hidden; text-overflow:ellipsis; white-space:nowrap;'>"
-                        f"<b style='color:#00205B;'>[{html.escape(dt_disp)}]</b> {html.escape(str(sr['심사명']))} "
-                        f"<span style='font-size:11.3px; color:#64748B;'>({html.escape(st_nm)})</span></span>"
+                        f"<div class='qo-list-row' style='padding:6px 2px;'>"
+                        f"<span style='overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12.5px;'>"
+                        f"<b style='color:#374151; margin-right:6px;'>{html.escape(dt_disp)}</b>"
+                        f"{html.escape(str(sr['심사명']))}</span>"
                         f"<span class='badge-pill {d_pill_cls}'>{html.escape(d_pill_txt)}</span>"
                         f"</div>"
                     )
                 sched_block_html = "".join(sched_items_html)
             else:
-                sched_block_html = "<div style='color:#64748B; padding:10px 4px;'>등록된 심사 일정이 없습니다. 상단 버튼을 눌러 심사 일자·내용을 등록하세요.</div>"
-
-            status_disp_txt = f"{aud_sum['icon']} {aud_sum['status']} [{aud_sum['pct']}%]" if aud_sum["has_data"] else "⏳ 일정 미등록 [0%]"
+                sched_block_html = "<div style='color:#9CA3AF; padding:12px 2px; font-size:12.5px;'>등록된 심사 일정이 없습니다. 우측 상단 '일정관리'에서 추가해 주세요.</div>"
 
             st.markdown(f"""
-            <div class="{aud_sum['banner_cls']}">{html.escape(aud_sum['banner_text'])}</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:7px;">
-                <span style="font-size:12.3px; font-weight:800; color:#334155;">진행 단계 게이지</span>
-                <span style="font-size:12.8px; font-weight:800; color:{aud_sum['color']};">{html.escape(status_disp_txt)}</span>
+            <div class="qo-prog-banner">
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{html.escape(aud_sum['banner_text'])}</span>
+                <span style="color:{aud_sum['color']}; font-weight:700; white-space:nowrap; margin-left:8px;">{html.escape(aud_sum['status'])} {aud_sum['pct']}%</span>
             </div>
-            <div class="thermo-row">
-                <div class="thermo-bulb" style="background-color:{aud_sum['color']};">🌡️</div>
-                <div class="thermo-track">
-                    <div class="thermo-fill" style="width:{aud_sum['pct']}%; background-color:{aud_sum['color']};"></div>
-                </div>
+            <div class="qo-prog-track">
+                <div class="qo-prog-fill" style="width:{aud_sum['pct']}%; background-color:{aud_sum['color']};"></div>
             </div>
-            <div class="thermo-stage-labels">
-                <span>준비중(20%)</span><span>심사중(50%)</span><span>서류(75%)</span><span>현장(85%)</span><span>종료(100%)</span>
+            <div class="qo-prog-steps">
+                <span>준비중 20%</span><span>심사중 50%</span><span>서류 75%</span><span>현장 85%</span><span>종료 100%</span>
             </div>
-            <div style="font-size:12.3px; font-weight:800; color:#00205B; margin-bottom:4px;">📅 연간 대내외 심사 일정 및 D-Day 현황</div>
-            <div class="audit-sched-scroll" style="height:168px;">
+            <div style="font-size:12px; font-weight:700; color:#4B5563; margin:6px 0 4px 0;">연간 대내외 심사 일정</div>
+            <div class="qo-scroll-area" style="min-height:164px; max-height:164px; border:1px solid #F2F4F7; border-radius:8px; padding:4px 8px;">
                 {sched_block_html}
             </div>
             """, unsafe_allow_html=True)
 
     # ------------------------------------------------------------------
-    # [하단 구역] 좌측: 컴팩트 클레임 PPM 추이 + 클레임/부적합 특이사항(LOT 연동)
-    #            우측: 아래로 내려 축소 배치한 2026 부문 8대 KPI 신호등 (4x2)
+    # [하단 구역] 좌측: 품질 추이(PPM) 그래프 + 최근 클레임·부적합 특이사항
+    #            우측: 하향 배치된 컴팩트 2026 부문 8대 KPI 스코어카드 (4x2)
     # ------------------------------------------------------------------
     bot_left, bot_right = st.columns([1.05, 1.38])
 
     with bot_left:
-        # (하단 좌-상) 컴팩트 클레임 PPM 추이 그래프
         with st.container(border=True):
-            st.button(
-                f"📉 품질 추이 및 클레임 PPM (누적 {claim_actual_ppm}ppm / 목표 1.12ppm 이하)   상세보기 ›",
-                key="main_go_claim_chart",
-                type="primary",
-                use_container_width=True,
-                on_click=set_view,
-                args=("claim",)
-            )
+            render_card_header(f"품질 추이 현황 (누적 {claim_actual_ppm} ppm / 목표 1.12 이하)", "claim", "main_go_claim_chart", "추이분석 ›")
             st.plotly_chart(
                 draw_compact_ppm_chart(df_claim_trend, claim_act_line, claim_fc_line, claim_last_i),
                 use_container_width=True,
                 config={"displayModeBar": False}
             )
 
-        # (하단 좌-하) 클레임 및 부적합 특이사항 (클릭 시 LOT 역추적 즉시 연동)
         with st.container(border=True):
-            st.button(
-                "🔍 클레임 및 부적합 특이사항 (클릭 시 LOT 역추적 직결)   역추적 화면 ›",
-                key="main_go_lot_trace",
-                type="primary",
-                use_container_width=True,
-                on_click=set_view,
-                args=("lot_trace",)
-            )
+            render_card_header("클레임 및 부적합 특이사항", "lot_trace", "main_go_lot_trace", "LOT 역추적 ›")
 
             clm_issues = st.session_state.get("claim_special_list", [])
             if not clm_issues:
                 st.caption("등록된 클레임·부적합 특이사항이 없습니다.")
             else:
                 for idx_ci, ci in enumerate(clm_issues[:4]):
-                    ic1, ic2 = st.columns([3.3, 1.1])
+                    ic1, ic2 = st.columns([3.4, 1.0])
                     p_kw = str(ci.get("제품키워드", "")).strip()
                     e_kw = str(ci.get("소비기한", "")).strip()
-                    lot_tag = f" [제품:{p_kw} / 기한:{e_kw}]" if (p_kw or e_kw) else ""
-                    st_tag = str(ci.get("상태", "확인필요")).strip()
-                    b_cls = "badge-err" if "긴급" in st_tag or "부적합" in st_tag else ("badge-ok" if "완료" in st_tag else "badge-warn")
+                    sub_meta = f" · {p_kw} {e_kw}".strip(" ·") if (p_kw or e_kw) else ""
+                    st_tag = str(ci.get("상태", "확인 필요")).strip()
+
+                    if "긴급" in st_tag or "부적합" in st_tag or "필요" in st_tag:
+                        dot_c, b_cls = "dot-red", "badge-err"
+                    elif "완료" in st_tag:
+                        dot_c, b_cls = "dot-green", "badge-ok"
+                    else:
+                        dot_c, b_cls = "dot-blue", "badge-info"
 
                     with ic1:
                         st.markdown(
-                            f"<div style='padding:4px 2px; font-size:12.5px;'>"
-                            f"<span class='badge-pill {b_cls}' style='margin-right:6px;'>{html.escape(st_tag)}</span>"
-                            f"<b>{html.escape(str(ci.get('특이사항', '')))}</b>"
-                            f"<span style='color:#003876; font-size:11.5px; font-weight:700;'>{html.escape(lot_tag)}</span>"
+                            f"<div style='padding:5px 2px; font-size:12.6px; display:flex; align-items:center; justify-content:space-between;'>"
+                            f"<span style='overflow:hidden; text-overflow:ellipsis; white-space:nowrap;'>"
+                            f"<span class='qo-row-dot {dot_c}'></span>"
+                            f"<b style='color:#111827;'>{html.escape(str(ci.get('특이사항', '')))}</b>"
+                            f"<span style='color:#6B7280; font-size:11.5px;'>{html.escape(sub_meta)}</span></span>"
+                            f"<span class='badge-pill {b_cls}' style='margin-left:6px;'>{html.escape(st_tag)}</span>"
                             f"</div>",
                             unsafe_allow_html=True
                         )
                     with ic2:
                         st.button(
-                            "LOT 추적 ›",
+                            "이력조회 ›",
                             key=f"btn_ci_trace_{idx_ci}",
+                            type="secondary",
                             use_container_width=True,
                             on_click=jump_to_lot_trace,
                             args=(p_kw, e_kw)
                         )
 
-            with st.popover("➕ 클레임·부적합 특이사항 등록 / 편집 (시트 저장)", use_container_width=True):
+            with st.popover("클레임·부적합 특이사항 등록 / 삭제", use_container_width=True):
                 with st.form("form_add_claim_issue", clear_on_submit=True):
-                    st.markdown("**신규 클레임·부적합 특이사항 추가 (최대 최근 5건 표시)**")
-                    ci_desc = st.text_input("이슈 / 부적합 요약 (예: 검은콩 두유 상부접착 확인 요망)")
+                    ci_desc = st.text_input("이슈 내용 (예: 혼합액 규격 점검, 멸균유 검사 지연 등)")
                     f_c1, f_c2, f_c3 = st.columns(3)
                     with f_c1:
-                        ci_st = st.selectbox("상태", ["확인필요", "진행중", "조치완료", "긴급점검"])
+                        ci_st = st.selectbox("상태", ["확인 필요", "진행 중", "조치 예정", "조치 완료"])
                     with f_c2:
-                        ci_prod = st.text_input("제품 키워드 (역추적용)", placeholder="예: 검은콩")
+                        ci_prod = st.text_input("제품명 키워드", placeholder="예: 검은콩")
                     with f_c3:
-                        ci_exp = st.text_input("소비기한 (역추적용)", placeholder="예: 05.13")
+                        ci_exp = st.text_input("소비기한/LOT", placeholder="예: 05.13")
 
                     c_add_b, c_clr_b = st.columns(2)
                     with c_add_b:
-                        do_add_ci = st.form_submit_button("💾 특이사항 추가 저장")
+                        do_add_ci = st.form_submit_button("추가 저장")
                     with c_clr_b:
-                        do_del_last = st.form_submit_button("🗑️ 맨 위 항목 1건 삭제")
+                        do_del_last = st.form_submit_button("최상단 1건 삭제")
 
                     if do_add_ci and ci_desc.strip():
                         new_list = [{
@@ -4044,55 +4066,24 @@ if st.session_state.current_view == "main":
                         st.rerun()
 
     with bot_right:
-        # (하단 우측 - 하향·컴팩트 배치) 2026 부문 8대 KPI 신호등 (4x2 그리드, 전 카드 클릭 시 상세 이동)
-        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+        # 우측 하단으로 살짝 내려 안정감 있게 정렬한 2026 부문 8대 KPI 스코어카드
+        st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
         with st.container(border=True):
-            st.button(
-                "📊 2026 품질안전부문 8대 업적 KPI 신호등 (각 카드 클릭 시 세부 내역 이동)   전체 차트 보기 ›",
-                key="main_go_kpi8_board",
-                type="primary",
-                use_container_width=True,
-                on_click=set_view,
-                args=("dept_kpi8",)
-            )
+            render_card_header("2026 품질안전부문 8대 업적 KPI 현황", "dept_kpi8", "main_go_kpi8_board", "전체 차트 ›")
 
             mk = st.session_state["manual_kpis"]
             sup_disp_val = f"{sup_exec_rate}%" if total_sup_cnt > 0 else mk["kpi_11"]["compact_val"]
             sup_disp_sig = sig_supplier if total_sup_cnt > 0 else mk["kpi_11"]["signal"]
 
             compact_8_specs = [
-                {
-                    "key": "c8_1", "btn": "1. 원가 절감 ›", "view": "cost",
-                    "val": f"{cost_actual_uk}억", "sub": f"목표 {cost_target_uk}억 이상 ({cost_rate}%)", "sig": sig_cost
-                },
-                {
-                    "key": "c8_2", "btn": "2. 클레임 발생률 ›", "view": "claim",
-                    "val": f"{claim_actual_ppm}ppm", "sub": f"목표 {claim_target_ppm}ppm 이하 ({claim_total_cnt:,}건)", "sig": sig_claim
-                },
-                {
-                    "key": "c8_3", "btn": "3. HACCP 강화 ›", "view": "kpi_8",
-                    "val": mk["kpi_8"]["compact_val"], "sub": f"목표 {mk['kpi_8']['target_text']}", "sig": mk["kpi_8"]["signal"]
-                },
-                {
-                    "key": "c8_4", "btn": "4. 핵심불량 저감 ›", "view": "kpi_9",
-                    "val": mk["kpi_9"]["compact_val"], "sub": f"목표 {mk['kpi_9']['target_text']}", "sig": mk["kpi_9"]["signal"]
-                },
-                {
-                    "key": "c8_5", "btn": "5. 부자재 관리 ›", "view": "kpi_10",
-                    "val": mk["kpi_10"]["compact_val"], "sub": f"목표 {mk['kpi_10']['target_text']}", "sig": mk["kpi_10"]["signal"]
-                },
-                {
-                    "key": "c8_6", "btn": "6. 협력업체 관리 ›", "view": "supplier",
-                    "val": sup_disp_val, "sub": f"목표 {target_exec}% 이상 (서류 {sub_sup_cnt}/{total_sup_cnt})", "sig": sup_disp_sig
-                },
-                {
-                    "key": "c8_7", "btn": "7. 심사점수 ›", "view": "kpi_5",
-                    "val": mk["kpi_5"]["compact_val"], "sub": f"목표 {mk['kpi_5']['target_text']}", "sig": mk["kpi_5"]["signal"]
-                },
-                {
-                    "key": "c8_8", "btn": "8. 법적 RISK ›", "view": "kpi_12",
-                    "val": mk["kpi_12"]["compact_val"], "sub": f"목표 {mk['kpi_12']['target_text']}", "sig": mk["kpi_12"]["signal"]
-                }
+                {"key": "c8_1", "lbl": "1. 원가 절감", "view": "cost", "val": f"{cost_actual_uk}억", "sub": f"목표 {cost_target_uk}억 ({cost_rate}%)", "sig": sig_cost},
+                {"key": "c8_2", "lbl": "2. 클레임 발생률", "view": "claim", "val": f"{claim_actual_ppm} ppm", "sub": f"목표 {claim_target_ppm} 이하 ({claim_total_cnt:,}건)", "sig": sig_claim},
+                {"key": "c8_3", "lbl": "3. HACCP 강화", "view": "kpi_8", "val": mk["kpi_8"]["compact_val"], "sub": f"목표 {mk['kpi_8']['target_text']}", "sig": mk["kpi_8"]["signal"]},
+                {"key": "c8_4", "lbl": "4. 핵심불량 저감", "view": "kpi_9", "val": mk["kpi_9"]["compact_val"], "sub": f"목표 {mk['kpi_9']['target_text']}", "sig": mk["kpi_9"]["signal"]},
+                {"key": "c8_5", "lbl": "5. 부자재 관리", "view": "kpi_10", "val": mk["kpi_10"]["compact_val"], "sub": f"목표 {mk['kpi_10']['target_text']}", "sig": mk["kpi_10"]["signal"]},
+                {"key": "c8_6", "lbl": "6. 협력업체 관리", "view": "supplier", "val": sup_disp_val, "sub": f"목표 {target_exec}% ({sub_sup_cnt}/{total_sup_cnt})", "sig": sup_disp_sig},
+                {"key": "c8_7", "lbl": "7. 심사점수", "view": "kpi_5", "val": mk["kpi_5"]["compact_val"], "sub": f"목표 {mk['kpi_5']['target_text']}", "sig": mk["kpi_5"]["signal"]},
+                {"key": "c8_8", "lbl": "8. 법적 RISK", "view": "kpi_12", "val": mk["kpi_12"]["compact_val"], "sub": f"목표 {mk['kpi_12']['target_text']}", "sig": mk["kpi_12"]["signal"]}
             ]
 
             for row_start in (0, 4):
@@ -4101,21 +4092,22 @@ if st.session_state.current_view == "main":
                     item = compact_8_specs[row_start + idx_offset]
                     with col_obj:
                         with st.container(border=True):
+                            st.markdown(f"""
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:12px; font-weight:700; color:#4B5563;">{html.escape(item['lbl'])}</span>
+                                {get_signal_dot_html(item['sig'])}
+                            </div>
+                            <div class="qo-kpi-num">{html.escape(str(item['val']))}</div>
+                            <div class="qo-kpi-target" style="margin-bottom:6px;">{html.escape(str(item['sub']))}</div>
+                            """, unsafe_allow_html=True)
                             st.button(
-                                item["btn"],
+                                "상세보기 ›",
                                 key=f"btn_{item['key']}",
                                 type="secondary",
                                 use_container_width=True,
                                 on_click=set_view,
                                 args=(item["view"],)
                             )
-                            st.markdown(f"""
-                            <div class="compact-kpi-box">
-                                {get_signal_dot_html(item['sig'])}
-                                <div class="compact-kpi-val">{html.escape(str(item['val']))}</div>
-                                <div class="compact-kpi-sub">{html.escape(str(item['sub']))}</div>
-                            </div>
-                            """, unsafe_allow_html=True)
 # ============================ [PART 3 / 4 끝] ============================
 # ==============================================================================
 # [PART 4 / 4] 부문 8대 KPI 현황판 · 식품안전팀 / 품질관리팀 전 세부 페이지 라우팅
@@ -4151,7 +4143,7 @@ else:
 
         with r1_cols[0]:
             with st.container(border=True):
-                st.button("1. 원가 절감  ›", key="k8_hdr_1", type="primary", use_container_width=True, on_click=set_view, args=("cost",))
+                st.button("1. 원가 절감  ›", key="k8_hdr_1", type="secondary", use_container_width=True, on_click=set_view, args=("cost",))
                 st.markdown(f"""
                 <div class="kpi-meta-wrap">
                     {get_signal_dot_html(sig_cost)}
@@ -4164,7 +4156,7 @@ else:
 
         with r1_cols[1]:
             with st.container(border=True):
-                st.button("2. 클레임 발생률  ›", key="k8_hdr_2", type="primary", use_container_width=True, on_click=set_view, args=("claim",))
+                st.button("2. 클레임 발생률  ›", key="k8_hdr_2", type="secondary", use_container_width=True, on_click=set_view, args=("claim",))
                 st.markdown(f"""
                 <div class="kpi-meta-wrap">
                     {get_signal_dot_html(sig_claim)}
@@ -4178,7 +4170,7 @@ else:
         with r1_cols[2]:
             i3 = mk["kpi_8"]
             with st.container(border=True):
-                st.button(f"{i3['title']}  ›", key="k8_hdr_3", type="primary", use_container_width=True, on_click=set_view, args=("kpi_8",))
+                st.button(f"{i3['title']}  ›", key="k8_hdr_3", type="secondary", use_container_width=True, on_click=set_view, args=("kpi_8",))
                 st.markdown(f"""
                 <div class="kpi-meta-wrap">
                     {get_signal_dot_html(i3['signal'])}
@@ -4192,7 +4184,7 @@ else:
         with r1_cols[3]:
             i4 = mk["kpi_9"]
             with st.container(border=True):
-                st.button(f"{i4['title']}  ›", key="k8_hdr_4", type="primary", use_container_width=True, on_click=set_view, args=("kpi_9",))
+                st.button(f"{i4['title']}  ›", key="k8_hdr_4", type="secondary", use_container_width=True, on_click=set_view, args=("kpi_9",))
                 st.markdown(f"""
                 <div class="kpi-meta-wrap">
                     {get_signal_dot_html(i4['signal'])}
@@ -4209,7 +4201,7 @@ else:
         with r2_cols[0]:
             i5 = mk["kpi_10"]
             with st.container(border=True):
-                st.button(f"{i5['title']}  ›", key="k8_hdr_5", type="primary", use_container_width=True, on_click=set_view, args=("kpi_10",))
+                st.button(f"{i5['title']}  ›", key="k8_hdr_5", type="secondary", use_container_width=True, on_click=set_view, args=("kpi_10",))
                 notes5_html = "".join([f"<div style='padding:2px 0;'>- {html.escape(ln)}</div>" for ln in i5["notes"]])
                 st.markdown(f"""
                 <div class="kpi-meta-wrap">
@@ -4226,7 +4218,7 @@ else:
 
         with r2_cols[1]:
             with st.container(border=True):
-                st.button("6. 협력업체 관리강화  ›", key="k8_hdr_6", type="primary", use_container_width=True, on_click=set_view, args=("supplier",))
+                st.button("6. 협력업체 관리강화  ›", key="k8_hdr_6", type="secondary", use_container_width=True, on_click=set_view, args=("supplier",))
                 st.markdown(f"""
                 <div class="kpi-meta-wrap">
                     {get_signal_dot_html(sup_sig_disp)}
@@ -4240,7 +4232,7 @@ else:
         with r2_cols[2]:
             i7 = mk["kpi_5"]
             with st.container(border=True):
-                st.button("7. 심사점수  ›", key="k8_hdr_7", type="primary", use_container_width=True, on_click=set_view, args=("kpi_5",))
+                st.button("7. 심사점수  ›", key="k8_hdr_7", type="secondary", use_container_width=True, on_click=set_view, args=("kpi_5",))
                 st.markdown(f"""
                 <div class="kpi-meta-wrap">
                     {get_signal_dot_html(i7['signal'])}
@@ -4254,7 +4246,7 @@ else:
         with r2_cols[3]:
             i8 = mk["kpi_12"]
             with st.container(border=True):
-                st.button(f"{i8['title']}  ›", key="k8_hdr_8", type="primary", use_container_width=True, on_click=set_view, args=("kpi_12",))
+                st.button(f"{i8['title']}  ›", key="k8_hdr_8", type="secondary", use_container_width=True, on_click=set_view, args=("kpi_12",))
                 notes8_html = "".join([f"<div style='padding:2px 0;'>- {html.escape(ln)}</div>" for ln in i8["notes"]])
                 st.markdown(f"""
                 <div class="kpi-meta-wrap">

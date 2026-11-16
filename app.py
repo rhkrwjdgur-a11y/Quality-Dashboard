@@ -262,7 +262,7 @@ HIST_TABS = {
 }
 
 # ==============================================================================
-# 2. 화이트 배경(White Theme) + 좌측 사이드바 탭 + 실시간 관제판 전용 CSS
+# 2. 모던 SaaS 화이트 & 연세 블루 테마 CSS (최신 Streamlit DOM 완벽 호환)
 # ==============================================================================
 st.markdown("""
 <style>
@@ -272,115 +272,175 @@ st.markdown("""
         font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
     }
     .stApp {
-        background-color: #F4F7FA;
-        color: #1E293B;
+        background-color: #F5F7FB;
+        color: #0F172A;
     }
     header[data-testid="stHeader"],
     [data-testid="stAppHeader"] {
-        background-color: #F4F7FA !important;
+        background-color: #F5F7FB !important;
     }
     div[data-testid="stMainBlockContainer"],
     div[data-testid="stAppViewBlockContainer"],
-    section.main > div.block-container,
     .block-container {
-        padding-top: 2.6rem !important;
+        padding-top: 2.2rem !important;
         padding-bottom: 2.2rem !important;
         max-width: 98% !important;
     }
 
-    /* 좌측 사이드바 (화이트 & 연세 네이비 포인트) */
+    /* ------------------------------------------------------------------ */
+    /* 좌측 사이드바 : 테두리 없는 깔끔한 모던 SaaS 탭 스타일                */
+    /* ------------------------------------------------------------------ */
     section[data-testid="stSidebar"] {
         background-color: #FFFFFF !important;
-        border-right: 1.5px solid #DCE4EE !important;
-        min-width: 248px !important;
-        max-width: 268px !important;
+        border-right: 1px solid #E5EAF2 !important;
+        min-width: 246px !important;
+        max-width: 264px !important;
     }
     section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] {
-        padding-top: 1.2rem !important;
+        padding-top: 1.1rem !important;
     }
     .sb-brand-box {
-        background: linear-gradient(135deg, #00205B 0%, #003876 100%);
-        color: #FFFFFF;
-        padding: 13px 14px;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-left: 4px solid #00205B;
+        padding: 12px 14px;
         border-radius: 10px;
         margin-bottom: 14px;
-        box-shadow: 0 3px 10px rgba(0, 32, 91, 0.14);
     }
     .sb-brand-title {
         font-size: 16px;
         font-weight: 800;
+        color: #00205B;
         letter-spacing: -0.3px;
-        line-height: 1.35;
     }
     .sb-brand-sub {
         font-size: 11.5px;
-        color: #BFDBFE;
-        margin-top: 3px;
+        color: #64748B;
+        margin-top: 2px;
         font-weight: 600;
     }
     .sb-group-hdr {
-        font-size: 12px;
+        font-size: 11.3px;
         font-weight: 800;
-        color: #003876;
-        background-color: #EFF6FF;
-        border-left: 3.5px solid #00205B;
-        padding: 5px 9px;
-        border-radius: 5px;
-        margin: 12px 0 6px 0;
-        letter-spacing: -0.2px;
+        color: #64748B;
+        padding: 10px 8px 3px 8px;
+        margin: 6px 0 2px 0;
+        letter-spacing: -0.1px;
     }
 
-    /* 사이드바 메뉴 버튼 (활성 vs 비활성) */
-    section[data-testid="stSidebar"] button[kind="primary"],
-    section[data-testid="stSidebar"] button[data-testid="baseButton-primary"],
-    section[data-testid="stSidebar"] button[data-testid="stBaseButton-primary"] {
-        background: linear-gradient(90deg, #00205B 0%, #00408F 100%) !important;
-        color: #FFFFFF !important;
-        font-size: 13.3px !important;
-        font-weight: 700 !important;
+    /* 사이드바 선택된 탭 (연한 스카이블루 하이라이트) */
+    section[data-testid="stSidebar"] .stButton > button[kind="primary"],
+    section[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-primary"],
+    section[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"] {
+        background-color: #EFF6FF !important;
+        color: #1D4ED8 !important;
+        font-size: 13.4px !important;
+        font-weight: 800 !important;
         text-align: left !important;
         justify-content: flex-start !important;
-        padding: 7px 11px !important;
-        border-radius: 7px !important;
+        padding: 8px 12px !important;
         border: none !important;
-        margin-bottom: 2px !important;
-        box-shadow: 0 2px 6px rgba(0, 32, 91, 0.18) !important;
+        border-left: 3.5px solid #1D4ED8 !important;
+        border-radius: 0 8px 8px 0 !important;
+        box-shadow: none !important;
+        margin-bottom: 1px !important;
     }
-    section[data-testid="stSidebar"] button[kind="secondary"],
-    section[data-testid="stSidebar"] button[data-testid="baseButton-secondary"],
-    section[data-testid="stSidebar"] button[data-testid="stBaseButton-secondary"] {
-        background-color: #FFFFFF !important;
-        color: #334155 !important;
-        font-size: 13.2px !important;
+    /* 사이드바 일반 탭 (네모 박스 테두리 제거) */
+    section[data-testid="stSidebar"] .stButton > button[kind="secondary"],
+    section[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-secondary"],
+    section[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-secondary"] {
+        background-color: transparent !important;
+        color: #475569 !important;
+        font-size: 13.3px !important;
         font-weight: 600 !important;
         text-align: left !important;
         justify-content: flex-start !important;
-        padding: 7px 11px !important;
-        border-radius: 7px !important;
-        border: 1px solid #E2E8F0 !important;
-        margin-bottom: 2px !important;
+        padding: 8px 12px !important;
+        border: none !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+        margin-bottom: 1px !important;
     }
-    section[data-testid="stSidebar"] button[kind="secondary"]:hover,
-    section[data-testid="stSidebar"] button[data-testid="baseButton-secondary"]:hover,
-    section[data-testid="stSidebar"] button[data-testid="stBaseButton-secondary"]:hover {
+    section[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover,
+    section[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-secondary"]:hover,
+    section[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-secondary"]:hover {
         background-color: #F1F5F9 !important;
-        color: #00205B !important;
-        border-color: #94A3B8 !important;
+        color: #0F172A !important;
     }
 
-    /* 메인 화면 헤더 & 카드 공통 */
+    /* ------------------------------------------------------------------ */
+    /* 메인 본문 버튼 : 기본 빨간색 완전 차단 & 세련된 좌측정렬 소프트 헤더   */
+    /* ------------------------------------------------------------------ */
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[kind="primary"],
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="baseButton-primary"],
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="stBaseButton-primary"] {
+        width: 100% !important;
+        background: linear-gradient(90deg, #F8FAFC 0%, #F1F5F9 100%) !important;
+        color: #0F172A !important;
+        font-size: 14.6px !important;
+        font-weight: 800 !important;
+        border: 1px solid #E2E8F0 !important;
+        border-left: 4px solid #003876 !important;
+        border-radius: 8px !important;
+        padding: 8px 13px !important;
+        margin-bottom: 6px !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        box-shadow: none !important;
+        transition: all 0.16s ease !important;
+    }
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[kind="primary"] div[data-testid="stMarkdownContainer"] {
+        width: 100% !important;
+        text-align: left !important;
+    }
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[kind="primary"]:hover,
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="baseButton-primary"]:hover,
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="stBaseButton-primary"]:hover {
+        background: #EFF6FF !important;
+        color: #1D4ED8 !important;
+        border-color: #BFDBFE !important;
+        border-left-color: #1D4ED8 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(29, 78, 216, 0.08) !important;
+    }
+
+    /* 메인 본문 보조 버튼 (상단 네비게이션 및 소형 KPI 버튼) */
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[kind="secondary"],
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="baseButton-secondary"],
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="stBaseButton-secondary"] {
+        background-color: #FFFFFF !important;
+        color: #1E293B !important;
+        font-size: 13.2px !important;
+        font-weight: 700 !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        padding: 6px 11px !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+        transition: all 0.15s ease !important;
+    }
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[kind="secondary"]:hover,
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="baseButton-secondary"]:hover,
+    div[data-testid="stAppViewContainer"] section:not([data-testid="stSidebar"]) .stButton > button[data-testid="stBaseButton-secondary"]:hover {
+        background-color: #EFF6FF !important;
+        color: #1D4ED8 !important;
+        border-color: #93C5FD !important;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* 헤더 · 카드 컨테이너 · 신호등 · 내부 위젯 스타일                      */
+    /* ------------------------------------------------------------------ */
     .yonsei-header-bar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 3px solid #00205B;
-        padding: 4px 0 9px 0;
-        margin-bottom: 12px;
+        border-bottom: 2px solid #E2E8F0;
+        padding: 4px 0 10px 0;
+        margin-bottom: 14px;
     }
     .yonsei-title {
-        font-size: 23px;
+        font-size: 22px;
         font-weight: 800;
-        color: #00205B;
+        color: #0F172A;
         letter-spacing: -0.5px;
     }
     .live-status-pill {
@@ -388,103 +448,60 @@ st.markdown("""
         align-items: center;
         gap: 6px;
         background-color: #ECFDF5;
-        color: #065F46;
+        color: #047857;
         border: 1px solid #A7F3D0;
         padding: 4px 12px;
         border-radius: 999px;
-        font-size: 12.5px;
+        font-size: 12.2px;
         font-weight: 700;
     }
     .section-tag-title {
-        font-size: 14.5px;
+        font-size: 14px;
         font-weight: 800;
-        color: #00205B;
-        margin: 2px 0 7px 2px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        color: #334155;
+        margin: 2px 0 8px 2px;
     }
 
-    /* 카드 컨테이너 (화이트 배경 + 정갈한 테두리) */
     div[data-testid="stVerticalBlockBorderWrapper"] {
         background-color: #FFFFFF !important;
-        border: 1px solid #DCE4EE !important;
-        border-radius: 11px !important;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-        padding: 10px 13px !important;
+        border: 1px solid #E5EAF2 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.035) !important;
+        padding: 13px 15px !important;
         margin-bottom: 8px;
     }
 
-    /* 메인 본문 내 Primary 버튼 (카드 상단 클릭 이동 헤더) */
-    section.main button[kind="primary"],
-    section.main button[data-testid="baseButton-primary"],
-    section.main button[data-testid="stBaseButton-primary"] {
-        width: 100% !important;
-        background: linear-gradient(90deg, #00205B 0%, #003876 100%) !important;
-        color: #FFFFFF !important;
-        font-size: 14.2px !important;
-        font-weight: 700 !important;
-        border: none !important;
-        border-radius: 7px !important;
-        padding: 7px 11px !important;
-        margin-bottom: 5px !important;
-        box-shadow: 0 2px 5px rgba(0, 32, 91, 0.12) !important;
-    }
-    section.main button[kind="primary"]:hover,
-    section.main button[data-testid="baseButton-primary"]:hover,
-    section.main button[data-testid="stBaseButton-primary"]:hover {
-        background: linear-gradient(90deg, #003876 0%, #0052A5 100%) !important;
-    }
-    section.main button[kind="secondary"],
-    section.main button[data-testid="baseButton-secondary"],
-    section.main button[data-testid="stBaseButton-secondary"] {
-        background-color: #F8FAFC !important;
-        color: #00205B !important;
-        font-size: 12.8px !important;
-        font-weight: 700 !important;
-        border: 1px solid #CBD5E1 !important;
-        border-radius: 7px !important;
-        padding: 5px 10px !important;
-    }
-    section.main button[kind="secondary"]:hover,
-    section.main button[data-testid="baseButton-secondary"]:hover,
-    section.main button[data-testid="stBaseButton-secondary"]:hover {
-        background-color: #EFF6FF !important;
-        border-color: #003876 !important;
-    }
-
-    /* 상단 실시간 카드 3종 내부 스타일 */
     .proc-check-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
         background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 7px;
-        padding: 6px 10px;
+        border: 1px solid #EDF2F7;
+        border-radius: 8px;
+        padding: 7px 11px;
         margin-bottom: 5px;
         font-size: 13px;
     }
-    .proc-check-label { font-weight: 800; color: #1E293B; }
+    .proc-check-label { font-weight: 700; color: #1E293B; }
     .proc-check-meta { font-size: 11.8px; color: #64748B; margin-left: 5px; }
 
     .badge-pill {
         padding: 2.5px 9px;
         border-radius: 999px;
-        font-size: 11.8px;
-        font-weight: 800;
+        font-size: 11.5px;
+        font-weight: 700;
         white-space: nowrap;
     }
-    .badge-ok { background-color: #DCFCE7; color: #166534; border: 1px solid #86EFAC; }
-    .badge-warn { background-color: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
-    .badge-err { background-color: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
-    .badge-info { background-color: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; }
+    .badge-ok { background-color: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+    .badge-warn { background-color: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
+    .badge-err { background-color: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .badge-info { background-color: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
 
     .tall-scroll-box {
         background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        padding: 8px 10px;
+        border: 1px solid #EDF2F7;
+        border-radius: 9px;
+        padding: 8px 11px;
         height: 156px;
         overflow-y: auto;
         font-size: 12.6px;
@@ -506,7 +523,7 @@ st.markdown("""
         background-color: #FFFBEB;
         border: 1px solid #FDE68A;
         border-left: 4px solid #F59E0B;
-        border-radius: 7px;
+        border-radius: 8px;
         padding: 8px 11px;
         min-height: 82px;
         max-height: 98px;
@@ -517,12 +534,11 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* 심사 진행 온도계 & 일정 리스트 */
     .audit-banner-today {
         background-color: #FEF2F2;
         border: 1px solid #FECACA;
         border-left: 4px solid #EF4444;
-        border-radius: 7px;
+        border-radius: 8px;
         padding: 6px 10px;
         font-size: 12.8px;
         font-weight: 800;
@@ -531,12 +547,12 @@ st.markdown("""
     .audit-banner-up {
         background-color: #EFF6FF;
         border: 1px solid #BFDBFE;
-        border-left: 4px solid #003876;
-        border-radius: 7px;
+        border-left: 4px solid #2563EB;
+        border-radius: 8px;
         padding: 6px 10px;
         font-size: 12.8px;
         font-weight: 700;
-        color: #00205B;
+        color: #1E3A8A;
     }
     .thermo-row {
         display: flex;
@@ -558,11 +574,10 @@ st.markdown("""
     }
     .thermo-track {
         flex-grow: 1;
-        height: 15px;
+        height: 13px;
         background-color: #E2E8F0;
         border-radius: 999px;
         overflow: hidden;
-        border: 1px solid #CBD5E1;
     }
     .thermo-fill {
         height: 100%;
@@ -574,14 +589,14 @@ st.markdown("""
         justify-content: space-between;
         font-size: 11px;
         color: #64748B;
-        font-weight: 700;
+        font-weight: 600;
         margin-bottom: 8px;
         padding: 0 2px;
     }
     .audit-sched-scroll {
         background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
+        border: 1px solid #EDF2F7;
+        border-radius: 9px;
         padding: 7px 10px;
         height: 162px;
         overflow-y: auto;
@@ -596,64 +611,75 @@ st.markdown("""
     }
     .audit-sched-item:last-child { border-bottom: none; }
 
-    /* 우측 하단 컴팩트 8대 KPI 신호등 카드 (4x2) */
+    /* 컴팩트 KPI 박스 & 모던 광채 신호등 (투박한 검은 테두리 제거) */
     .compact-kpi-box {
         position: relative;
         padding: 4px 4px 2px 4px;
-        min-height: 74px;
+        min-height: 70px;
     }
     .compact-kpi-val {
         font-size: 20px;
         font-weight: 800;
-        color: #00205B;
+        color: #0F172A;
         line-height: 1.25;
-        margin-top: 2px;
+        margin-top: 3px;
     }
     .compact-kpi-sub {
-        font-size: 11.5px;
+        font-size: 11.4px;
         color: #64748B;
         font-weight: 600;
         margin-top: 3px;
         line-height: 1.35;
     }
     .signal-dot {
-        height: 16px;
-        width: 16px;
+        height: 12px;
+        width: 12px;
         border-radius: 50%;
         position: absolute;
-        top: 2px;
-        right: 2px;
+        top: 6px;
+        right: 6px;
     }
-    .signal-red { background-color: #EF4444; border: 2px solid #991B1B; box-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
-    .signal-yellow { background-color: #F59E0B; border: 2px solid #92400E; box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
-    .signal-green { background-color: #10B981; border: 2px solid #065F46; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
-    .signal-gray { background-color: #94A3B8; border: 2px solid #475569; }
+    .signal-green {
+        background-color: #10B981;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.16);
+    }
+    .signal-yellow {
+        background-color: #F59E0B;
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
+    }
+    .signal-red {
+        background-color: #EF4444;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16);
+    }
+    .signal-gray {
+        background-color: #94A3B8;
+        box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.16);
+    }
 
-    /* 2026 부문 8대 KPI 전체 페이지 카드용 */
     .kpi-meta-wrap {
         position: relative;
-        min-height: 88px;
+        min-height: 86px;
         padding: 6px 6px 4px 6px;
-        font-size: 13.6px;
-        color: #1E293B;
+        font-size: 13.5px;
+        color: #334155;
         line-height: 1.68;
     }
-    .kpi-dot-bullet { color: #003876; font-weight: 800; margin-right: 6px; }
+    .kpi-dot-bullet { color: #2563EB; font-weight: 800; margin-right: 6px; }
     .kpi-sub-pill {
         display: inline-block;
-        margin-top: 4px;
-        padding: 2px 9px;
-        font-size: 11.8px;
+        margin-top: 5px;
+        padding: 2.5px 10px;
+        font-size: 11.6px;
         font-weight: 700;
-        color: #003876;
-        background-color: #EBF3FE;
-        border: 1px solid #BFDBFE;
+        color: #1D4ED8;
+        background-color: #EFF6FF;
+        border: 1px solid #DBEAFE;
         border-radius: 999px;
     }
     .card-scroll-box {
         background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
+        border: 1px solid #EDF2F7;
+        border-radius: 9px;
         padding: 9px 11px;
         height: 148px;
         overflow-y: auto;
@@ -662,13 +688,12 @@ st.markdown("""
         line-height: 1.55;
     }
 
-    /* 상세 분석 박스 & 관제 테이블 */
     .forecast-box {
         background-color: #FFFFFF;
-        border: 1px solid #DCE4EE;
-        border-left: 5px solid #00205B;
+        border: 1px solid #E5EAF2;
+        border-left: 4px solid #1D4ED8;
         padding: 13px 17px;
-        border-radius: 8px;
+        border-radius: 10px;
         margin-bottom: 14px;
         font-size: 13.6px;
         line-height: 1.65;
@@ -676,8 +701,8 @@ st.markdown("""
     }
     .trace-hero-box {
         background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
-        border: 1.5px solid #BFDBFE;
-        border-left: 6px solid #00205B;
+        border: 1px solid #DBEAFE;
+        border-left: 5px solid #1D4ED8;
         padding: 15px 19px;
         border-radius: 10px;
         margin-bottom: 15px;
@@ -688,8 +713,8 @@ st.markdown("""
     .issue-card-ok {
         background-color: #F0FDF4;
         border: 1px solid #BBF7D0;
-        border-left: 5px solid #10B981;
-        border-radius: 8px;
+        border-left: 4px solid #10B981;
+        border-radius: 9px;
         padding: 11px 14px;
         margin-bottom: 12px;
         font-size: 13.3px;
@@ -699,8 +724,8 @@ st.markdown("""
     .issue-card-warn {
         background-color: #FFFBEB;
         border: 1px solid #FDE68A;
-        border-left: 5px solid #F59E0B;
-        border-radius: 8px;
+        border-left: 4px solid #F59E0B;
+        border-radius: 9px;
         padding: 11px 14px;
         margin-bottom: 12px;
         font-size: 13.3px;
@@ -714,22 +739,22 @@ st.markdown("""
         font-size: 12.8px;
         margin-bottom: 14px;
         background-color: #FFFFFF;
-        border-radius: 9px;
+        border-radius: 10px;
         overflow: hidden;
-        border: 1px solid #E2E8F0;
+        border: 1px solid #E5EAF2;
     }
     .mon-table th {
-        background-color: #00205B;
-        color: #FFFFFF;
-        font-weight: 700;
+        background-color: #F1F5F9;
+        color: #0F172A;
+        font-weight: 800;
         padding: 9px 7px;
-        border-bottom: 2px solid #003876;
+        border-bottom: 1.5px solid #CBD5E1;
         text-align: center;
         word-break: keep-all;
     }
     .mon-table td {
         padding: 8px 7px;
-        border-bottom: 1px solid #E2E8F0;
+        border-bottom: 1px solid #F1F5F9;
         vertical-align: middle;
         word-break: keep-all;
         overflow-wrap: break-word;
@@ -739,9 +764,9 @@ st.markdown("""
     .mon-table tr:hover td { background-color: #F8FAFC; }
     .td-center { text-align: center; }
     .td-left { text-align: left; }
-    .cell-green { background-color: #DCFCE7 !important; color: #166534 !important; font-weight: 700; }
-    .cell-yellow { background-color: #FEF3C7 !important; color: #92400E !important; font-weight: 700; }
-    .cell-red { background-color: #FEE2E2 !important; color: #991B1B !important; font-weight: 700; }
+    .cell-green { background-color: #ECFDF5 !important; color: #047857 !important; font-weight: 700; }
+    .cell-yellow { background-color: #FFFBEB !important; color: #B45309 !important; font-weight: 700; }
+    .cell-red { background-color: #FEF2F2 !important; color: #B91C1C !important; font-weight: 700; }
     .cell-gray { background-color: #F8FAFC !important; color: #94A3B8 !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -2786,25 +2811,35 @@ all_load_errors = bundle["errors"]
 # ==============================================================================
 
 def draw_mini_bar(target_val: float, actual_val: float, suffix: str = "", bar_labels=("목표", "실적")):
+    def fmt_num(v: float) -> str:
+        return f"{int(v)}{suffix}" if float(v).is_integer() else f"{v}{suffix}"
+
     fig = go.Figure()
     fig.add_trace(go.Bar(
-        x=[bar_labels[0]], y=[target_val], text=[f"{target_val}{suffix}"],
-        textposition="inside", insidetextanchor="end", marker_color="#94A3B8", width=0.36,
-        textfont=dict(color="white", size=12, family="Pretendard, Malgun Gothic")
+        x=[bar_labels[0]], y=[target_val], text=[fmt_num(target_val)],
+        textposition="outside", cliponaxis=False,
+        marker_color="#CBD5E1", width=0.34,
+        textfont=dict(color="#475569", size=12, family="Pretendard, Malgun Gothic")
     ))
     fig.add_trace(go.Bar(
-        x=[bar_labels[1]], y=[actual_val], text=[f"{actual_val}{suffix}"],
-        textposition="inside", insidetextanchor="end", marker_color="#EA580C", width=0.36,
-        textfont=dict(color="white", size=12, family="Pretendard, Malgun Gothic")
+        x=[bar_labels[1]], y=[actual_val], text=[fmt_num(actual_val)],
+        textposition="outside", cliponaxis=False,
+        marker_color="#2563EB", width=0.34,
+        textfont=dict(color="#1D4ED8", size=12.5, family="Pretendard, Malgun Gothic")
     ))
-    max_y = max(target_val, actual_val) * 1.28 if max(target_val, actual_val) > 0 else 10
+    try:
+        fig.update_traces(marker_cornerradius=6)
+    except Exception:
+        pass
+
+    max_y = max(target_val, actual_val) * 1.35 if max(target_val, actual_val) > 0 else 10
     fig.update_layout(
-        height=150,
-        margin=dict(l=8, r=8, t=6, b=18),
+        height=152,
+        margin=dict(l=8, r=8, t=22, b=18),
         paper_bgcolor="#FFFFFF",
         plot_bgcolor="#FFFFFF",
         showlegend=False,
-        xaxis=dict(showgrid=False, zeroline=False, tickfont=dict(size=12, color="#334155")),
+        xaxis=dict(showgrid=False, zeroline=False, tickfont=dict(size=12, color="#475569")),
         yaxis=dict(showgrid=False, zeroline=True, zerolinecolor="#E2E8F0", showticklabels=False, range=[0, max_y])
     )
     return fig
